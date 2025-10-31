@@ -1,4 +1,21 @@
 services:
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/grafana.ini:/etc/grafana/grafana.ini:ro
+      - ./grafana/dashboards/dashboards.yml:/etc/grafana/provisioning/dashboards/dashboards.yml:ro
+      - ./grafana/dashboards:/etc/grafana/dashboards:ro
+      - ./grafana/datasources:/etc/grafana/provisioning/datasources:ro
+    networks:
+      - monitoring
+    restart: unless-stopped
+    secrets:
+      - GF_SECURITY_ADMIN_PASSWORD
+
   rabbitmq:
     build: ./rabbit-mq
     container_name: rabbitmq
@@ -24,6 +41,7 @@ services:
 
 volumes:
   rabbitmq_data:
+  grafana_data:
 
 
 networks:
@@ -33,3 +51,5 @@ networks:
 secrets:
   RABBITMQ_ADMIN_PASSWORD_HASH:
     file: ./rabbit-mq/secrets/admin-password-hash
+  GF_SECURITY_ADMIN_PASSWORD:
+    file: ./grafana/secrets/admin-password
