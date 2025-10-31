@@ -14,6 +14,8 @@ services:
     networks:
       - monitoring
     restart: unless-stopped
+    secrets:
+      - RABBITMQ_METRICS_PASSWORD
   grafana:
     image: grafana/grafana:latest
     container_name: grafana
@@ -53,6 +55,7 @@ services:
       start_period: 60s
     secrets:
       - RABBITMQ_ADMIN_PASSWORD_HASH
+      - RABBITMQ_METRICS_PASSWORD_HASH
 
 volumes:
   rabbitmq_data:
@@ -67,5 +70,9 @@ networks:
 secrets:
   RABBITMQ_ADMIN_PASSWORD_HASH:
     file: ./rabbit-mq/secrets/admin-password-hash
+  RABBITMQ_METRICS_PASSWORD_HASH:
+    file: ./rabbit-mq/secrets/metrics-password-hash
+  RABBITMQ_METRICS_PASSWORD:
+    file: ./rabbit-mq/secrets/metrics-password
   GF_SECURITY_ADMIN_PASSWORD:
     file: ./grafana/secrets/admin-password
