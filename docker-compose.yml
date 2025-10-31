@@ -1,0 +1,35 @@
+services:
+  rabbitmq:
+    build: ./rabbit-mq
+    container_name: rabbitmq
+    ports:
+      - "5672:5672" # AMQP port
+      - "15692:15692" # Prometheus metrics port
+      - "1883:1883" # MQTT port
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+      - ./rabbit-mq/definitions.template.json:/etc/rabbitmq/definitions.template.json:ro
+      - ./rabbit-mq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
+    networks:
+      - monitoring
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "rabbitmq-diagnostics", "check_port_connectivity" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    secrets:
+      - RABBITMQ_ADMIN_PASSWORD_HASH
+
+volumes:
+  rabbitmq_data:
+
+
+networks:
+  monitoring:
+    driver: bridge
+
+secrets:
+  RABBITMQ_ADMIN_PASSWORD_HASH:
+    file: ./rabbit-mq/secrets/admin-password-hash

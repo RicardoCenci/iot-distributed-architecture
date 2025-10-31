@@ -1,0 +1,23 @@
+{
+	"rabbit_version": "4.2",
+	"users": [
+		{
+			"name": "admin",
+			"password_hash": "${RABBITMQ_ADMIN_PASSWORD_HASH}",
+			"hashing_algorithm": "rabbit_password_hashing_sha256",
+			"tags": "administrator"
+		}
+	],
+	"vhosts": [
+		{
+			"name": "/"
+		}
+	],
+	"permissions": [],
+	"parameters": [],
+	"global_parameters": [],
+	"policies": [],
+	"exchanges": [],
+	"queues": [],
+	"bindings": []
+}
