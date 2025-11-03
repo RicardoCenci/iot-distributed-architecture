@@ -6,14 +6,17 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+
+	"github.com/RicardoCenci/iot-distributed-architecture/shared/logger"
 )
 
 type Config struct {
 	User      string `json:"rabbitmq_user"`
 	Password  string
-	Domain    string `json:"rabbitmq_domain"`
-	Port      string `json:"rabbitmq_port"`
-	QueueName string `json:"rabbitmq_queue_name"`
+	Domain    string        `json:"rabbitmq_domain"`
+	Port      string        `json:"rabbitmq_port"`
+	QueueName string        `json:"rabbitmq_queue_name"`
+	Log       logger.Config `json:"log"`
 }
 
 var DEFAULT_SECRET_PATH = getStringEnv("DEFAULT_SECRET_PATH", "/run/secrets/")

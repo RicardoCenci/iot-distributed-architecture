@@ -3,24 +3,26 @@ package rabbitmq
 import (
 	"context"
 	"fmt"
-	"log"
 	"time"
 
+	"github.com/RicardoCenci/iot-distributed-architecture/shared/logger"
 	"github.com/RicardoCenci/iot-distributed-architecture/workers/data/broker"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
 type Broker struct {
-	conn *amqp.Connection
-	ch   *amqp.Channel
-	url  string
+	conn   *amqp.Connection
+	ch     *amqp.Channel
+	url    string
+	logger logger.Interface
 }
 
-func NewBroker(url string) *Broker {
+func NewBroker(url string, logger logger.Interface) *Broker {
 	return &Broker{
-		conn: nil,
-		ch:   nil,
-		url:  url,
+		conn:   nil,
+		ch:     nil,
+		url:    url,
+		logger: logger,
 	}
 }
 
@@ -28,15 +30,15 @@ func (r *Broker) Connect() error {
 	maxRetries := 30
 
 	for i := 0; i < maxRetries; i++ {
-		log.Printf(r.url)
 		conn, err := amqp.Dial(r.url)
 		if err == nil {
 			r.conn = conn
+			r.logger.Info("Connected to RabbitMQ")
 			return nil
 		}
 
 		if i < maxRetries-1 {
-			log.Printf("Failed to connect to RabbitMQ, retrying... (%d/%d)", i+1, maxRetries)
+			r.logger.Warn("Failed to connect to RabbitMQ, retrying", "retry_number", i+1, "max_retries", maxRetries)
 			time.Sleep(2 * time.Second)
 		}
 	}

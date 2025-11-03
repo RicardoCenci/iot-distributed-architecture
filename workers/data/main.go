@@ -3,11 +3,11 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
 	"os"
 	"os/signal"
 	"syscall"
 
+	"github.com/RicardoCenci/iot-distributed-architecture/shared/logger"
 	"github.com/RicardoCenci/iot-distributed-architecture/workers/data/broker/rabbitmq"
 	"github.com/RicardoCenci/iot-distributed-architecture/workers/data/config"
 	"github.com/RicardoCenci/iot-distributed-architecture/workers/data/consumer"
@@ -15,12 +15,20 @@ import (
 )
 
 func main() {
-	// TODO: Substituir logger por um igual o do client
 	// TODO: Testar e2e com um producer
 
 	config := config.NewConfig()
 
-	log.Println("Connecting to RabbitMQ...")
+	loggerConfig := logger.Config{
+		Level: config.Log.Level,
+		Source: logger.SourceConfig{
+			Enabled:  config.Log.Source.Enabled,
+			Relative: config.Log.Source.Relative,
+			AsJSON:   config.Log.Source.AsJSON,
+		},
+	}
+
+	logger := logger.NewSlogLogger(loggerConfig)
 
 	rabbitMQ := rabbitmq.NewBroker(
 		fmt.Sprintf(
@@ -30,13 +38,13 @@ func main() {
 			config.Domain,
 			config.Port,
 		),
+		logger,
 	)
 
 	if err := rabbitMQ.Connect(); err != nil {
-		log.Fatalf("Failed to connect to RabbitMQ: %v", err)
+		logger.Error("Failed to connect to RabbitMQ", "error", err)
+		os.Exit(1)
 	}
-
-	log.Println("Connected to RabbitMQ")
 
 	defer rabbitMQ.Close()
 
@@ -45,22 +53,24 @@ func main() {
 	queue := rabbitmq.NewQueue(config.QueueName)
 
 	if err := rabbitMQ.SetupQueueChannel(queue); err != nil {
-		log.Fatalf("Failed to setup queue channel: %v", err)
+		logger.Error("Failed to setup queue channel", "error", err)
+		os.Exit(1)
 	}
 
-	log.Println("Starting consumer...")
+	logger.Info("Starting consumer")
 
 	if err := consumer.Start(context.Background(), queue, func(delivery amqp.Delivery) error {
-		log.Printf("Processing message: %v", delivery.Body)
+		logger.Info("Processing message", "message", delivery.Body)
 		return nil
 	}); err != nil {
-		log.Fatalf("Failed to start consumer: %v", err)
+		logger.Error("Failed to start consumer", "error", err)
+		os.Exit(1)
 	}
 
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 
-	log.Println("Data worker is running. Press Ctrl+C to stop.")
+	logger.Info("Data worker is running. Press Ctrl+C to stop.")
 	<-c
-	log.Println("Shutting down data worker...")
+	logger.Info("Shutting down data worker")
 }
