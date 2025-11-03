@@ -8,29 +8,27 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/RicardoCenci/iot-distributed-architecture/workers/data/broker/rabbitmq"
+	"github.com/RicardoCenci/iot-distributed-architecture/workers/data/config"
+	"github.com/RicardoCenci/iot-distributed-architecture/workers/data/consumer"
 	amqp "github.com/rabbitmq/amqp091-go"
-	"github.com/yourorg/workers-data/broker/rabbitmq"
-	"github.com/yourorg/workers-data/consumer"
 )
-
-const USER = "data-worker"
-const PASSWORD = "RxYy9aiobBDBc0v6W6Ab4RnOuaBgClwx"
-const DOMAIN = "localhost"
-const PORT = "5672"
-const QUEUE_NAME = "data-queue"
 
 func main() {
 	// TODO: Substituir logger por um igual o do client
 	// TODO: Testar e2e com um producer
 
+	config := config.NewConfig()
+
 	log.Println("Connecting to RabbitMQ...")
+
 	rabbitMQ := rabbitmq.NewBroker(
 		fmt.Sprintf(
 			"amqp://%s:%s@%s:%s",
-			USER,
-			PASSWORD,
-			DOMAIN,
-			PORT,
+			config.User,
+			config.Password,
+			config.Domain,
+			config.Port,
 		),
 	)
 
@@ -44,7 +42,7 @@ func main() {
 
 	consumer := consumer.NewDataConsumer(rabbitMQ)
 
-	queue := rabbitmq.NewQueue(QUEUE_NAME)
+	queue := rabbitmq.NewQueue(config.QueueName)
 
 	if err := rabbitMQ.SetupQueueChannel(queue); err != nil {
 		log.Fatalf("Failed to setup queue channel: %v", err)

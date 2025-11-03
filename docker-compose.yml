@@ -58,6 +58,20 @@ services:
       - RABBITMQ_METRICS_PASSWORD_HASH
       - RABBITMQ_DATA_WORKER_PASSWORD_HASH
 
+  workers-data:
+    build: ./workers/data
+    container_name: workers-data
+    environment:
+      - RABBITMQ_USER=data-worker
+      - RABBITMQ_DOMAIN=localhost
+      - RABBITMQ_PORT=5672
+      - RABBITMQ_QUEUE_NAME=data-queue
+    networks:
+      - monitoring
+    restart: unless-stopped
+    secrets:
+      - RABBITMQ_DATA_WORKER_PASSWORD
+
 volumes:
   rabbitmq_data:
   grafana_data:

@@ -6,8 +6,8 @@ import (
 	"log"
 	"time"
 
+	"github.com/RicardoCenci/iot-distributed-architecture/workers/data/broker"
 	amqp "github.com/rabbitmq/amqp091-go"
-	"github.com/yourorg/workers-data/broker"
 )
 
 type Broker struct {

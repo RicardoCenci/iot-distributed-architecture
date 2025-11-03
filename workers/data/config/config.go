@@ -1,0 +1,78 @@
+package config
+
+import (
+	"encoding/json"
+	"io"
+	"log"
+	"os"
+	"path/filepath"
+)
+
+type Config struct {
+	User      string `json:"rabbitmq_user"`
+	Password  string
+	Domain    string `json:"rabbitmq_domain"`
+	Port      string `json:"rabbitmq_port"`
+	QueueName string `json:"rabbitmq_queue_name"`
+}
+
+var DEFAULT_SECRET_PATH = getStringEnv("DEFAULT_SECRET_PATH", "/run/secrets/")
+
+func NewConfig() *Config {
+	fileConfig, err := getFromFile("config.json")
+	if err != nil {
+		log.Fatalf("Failed to read config file: %v", err)
+		return nil
+	}
+
+	password, err := getFromSecret("RABBITMQ_PASSWORD")
+
+	if err != nil {
+		log.Fatalf("Failed to read secret RABBITMQ_PASSWORD: %v", err)
+	}
+
+	return &Config{
+		User:      getStringEnv("RABBITMQ_USER", fileConfig.User),
+		Password:  password,
+		Domain:    getStringEnv("RABBITMQ_DOMAIN", fileConfig.Domain),
+		Port:      getStringEnv("RABBITMQ_PORT", fileConfig.Port),
+		QueueName: getStringEnv("RABBITMQ_QUEUE_NAME", fileConfig.QueueName),
+	}
+}
+
+func getFromFile(path string) (*Config, error) {
+	config, err := os.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+
+	var configData Config
+	json.Unmarshal(config, &configData)
+
+	return &configData, nil
+}
+
+func getStringEnv(key string, defaultValue string) string {
+	value := os.Getenv(key)
+	if value == "" {
+		return defaultValue
+	}
+	return value
+}
+
+func getFromSecret(name string) (string, error) {
+	path := filepath.Join(DEFAULT_SECRET_PATH, name)
+
+	file, err := os.Open(path)
+	if err != nil {
+		return "", err
+	}
+	defer file.Close()
+
+	content, err := io.ReadAll(file)
+	if err != nil {
+		return "", err
+	}
+
+	return string(content), nil
+}

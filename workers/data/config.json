@@ -1,0 +1,6 @@
+{
+    "rabbitmq_user": "data-worker",
+    "rabbitmq_domain": "localhost",
+    "rabbitmq_port": "5672",
+    "rabbitmq_queue_name": "data-queue"
+}
