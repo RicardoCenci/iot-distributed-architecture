@@ -12,7 +12,7 @@ import (
 	"github.com/RicardoCenci/iot-distributed-architecture/client/config"
 	"github.com/RicardoCenci/iot-distributed-architecture/client/device"
 	"github.com/RicardoCenci/iot-distributed-architecture/client/drivers"
-	"github.com/RicardoCenci/iot-distributed-architecture/client/logger"
+	"github.com/RicardoCenci/iot-distributed-architecture/shared/logger"
 )
 
 const DEFAULT_CONFIG_FILE = "config.toml"
@@ -33,7 +33,15 @@ func main() {
 		log.Fatalf("Failed to validate config: %v", err)
 	}
 
-	logger := logger.NewSlogLogger(config)
+	loggerConfig := logger.Config{
+		Level: config.Log.Level,
+		Source: logger.SourceConfig{
+			Enabled:  config.Log.Source.Enabled,
+			Relative: config.Log.Source.Relative,
+			AsJSON:   config.Log.Source.AsJSON,
+		},
+	}
+	logger := logger.NewSlogLogger(loggerConfig)
 
 	device := device.NewDevice(
 		config.Device.ID,

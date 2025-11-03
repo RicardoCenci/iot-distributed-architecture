@@ -4,7 +4,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/RicardoCenci/iot-distributed-architecture/client/logger"
+	"github.com/RicardoCenci/iot-distributed-architecture/shared/logger"
 )
 
 type Metrics struct {

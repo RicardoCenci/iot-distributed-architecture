@@ -4,6 +4,8 @@ import (
 	"os"
 	"testing"
 	"time"
+
+	"github.com/RicardoCenci/iot-distributed-architecture/shared/logger"
 )
 
 func TestNewConfig(t *testing.T) {
@@ -164,7 +166,7 @@ func TestConfig_Validate(t *testing.T) {
 						TopicMetrics:  {Topic: "iot/device/metrics"},
 					},
 				},
-				Log: LogConfig{Level: "info"},
+				Log: logger.Config{Level: "info"},
 			},
 			wantErr: false,
 		},
@@ -179,7 +181,7 @@ func TestConfig_Validate(t *testing.T) {
 						TopicMetrics:  {Topic: "iot/device/metrics"},
 					},
 				},
-				Log: LogConfig{Level: "info"},
+				Log: logger.Config{Level: "info"},
 			},
 			wantErr: true,
 		},
@@ -194,7 +196,7 @@ func TestConfig_Validate(t *testing.T) {
 						TopicMetrics:  {Topic: "iot/device/metrics"},
 					},
 				},
-				Log: LogConfig{Level: "info"},
+				Log: logger.Config{Level: "info"},
 			},
 			wantErr: true,
 		},
@@ -210,7 +212,7 @@ func TestConfig_Validate(t *testing.T) {
 						TopicMetrics:  {Topic: "iot/device/metrics"},
 					},
 				},
-				Log: LogConfig{Level: "info"},
+				Log: logger.Config{Level: "info"},
 			},
 			wantErr: true,
 		},
@@ -222,7 +224,7 @@ func TestConfig_Validate(t *testing.T) {
 					Broker: "tcp://localhost:1883",
 					QoS:    1,
 				},
-				Log: LogConfig{Level: "info"},
+				Log: logger.Config{Level: "info"},
 			},
 			wantErr: true,
 		},
@@ -237,7 +239,7 @@ func TestConfig_Validate(t *testing.T) {
 						TopicMetrics: {Topic: "iot/device/metrics"},
 					},
 				},
-				Log: LogConfig{Level: "info"},
+				Log: logger.Config{Level: "info"},
 			},
 			wantErr: true,
 		},
@@ -253,7 +255,7 @@ func TestConfig_Validate(t *testing.T) {
 						TopicMetrics:  {Topic: "iot/device/metrics"},
 					},
 				},
-				Log: LogConfig{Level: "info"},
+				Log: logger.Config{Level: "info"},
 			},
 			wantErr: true,
 		},
@@ -270,7 +272,7 @@ func TestConfig_Validate(t *testing.T) {
 					},
 				},
 				WiFi: &WiFiConfig{},
-				Log:  LogConfig{Level: "info"},
+				Log:  logger.Config{Level: "info"},
 			},
 			wantErr: true,
 		},
@@ -301,7 +303,7 @@ func TestConfig_Validate(t *testing.T) {
 						TopicMetrics:  {Topic: "iot/device/metrics"},
 					},
 				},
-				Log: LogConfig{Level: "invalid"},
+				Log: logger.Config{Level: "invalid"},
 			},
 			wantErr: true,
 		},

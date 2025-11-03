@@ -9,28 +9,26 @@ import (
 	"runtime"
 	"strings"
 	"time"
-
-	"github.com/RicardoCenci/iot-distributed-architecture/client/config"
 )
 
 type SlogLogger struct {
 	handler slog.Handler
 }
 
-func NewSlogLogger(config *config.Config) *SlogLogger {
+func NewSlogLogger(config Config) *SlogLogger {
 	replaceAttr := func(groups []string, a slog.Attr) slog.Attr { return a }
 
-	if config.Log.Source.Enabled && (config.Log.Source.Relative || !config.Log.Source.AsJSON) {
+	if config.Source.Enabled && (config.Source.Relative || !config.Source.AsJSON) {
 		replaceAttr = replaceSourceAttrFn(config)
 	}
 
 	handlerOption := &slog.HandlerOptions{
 		Level:       slog.LevelInfo,
-		AddSource:   config.Log.Source.Enabled,
+		AddSource:   config.Source.Enabled,
 		ReplaceAttr: replaceAttr,
 	}
 
-	switch config.Log.Level {
+	switch config.Level {
 	case "debug":
 		handlerOption.Level = slog.LevelDebug
 	case "info":
@@ -46,7 +44,7 @@ func NewSlogLogger(config *config.Config) *SlogLogger {
 	}
 }
 
-func replaceSourceAttrFn(config *config.Config) func(groups []string, a slog.Attr) slog.Attr {
+func replaceSourceAttrFn(config Config) func(groups []string, a slog.Attr) slog.Attr {
 	binDir, err := getBinaryDirectory()
 
 	if err != nil {
@@ -59,13 +57,13 @@ func replaceSourceAttrFn(config *config.Config) func(groups []string, a slog.Att
 		if a.Key == slog.SourceKey && binDir != "" {
 			if src, ok := a.Value.Any().(*slog.Source); ok && src != nil {
 
-				if config.Log.Source.Relative {
+				if config.Source.Relative {
 					if rel, err := filepath.Rel(binDir, src.File); err == nil {
 						src.File = rel
 					}
 				}
 
-				if !config.Log.Source.AsJSON {
+				if !config.Source.AsJSON {
 					a.Value = slog.StringValue(
 						fmt.Sprintf("%s@%s:%d", src.File, src.Function, src.Line),
 					)

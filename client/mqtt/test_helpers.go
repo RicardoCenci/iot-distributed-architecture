@@ -1,6 +1,6 @@
 package mqtt
 
-import "github.com/RicardoCenci/iot-distributed-architecture/client/logger"
+import "github.com/RicardoCenci/iot-distributed-architecture/shared/logger"
 
 type mockLogger struct {
 	logs []string
