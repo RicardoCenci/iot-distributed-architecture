@@ -81,7 +81,10 @@ func parseConfig(fileName string) (*dotNotationMap, error) {
 
 		if strings.HasPrefix(value, "\"\"\"") {
 			currentValue = ""
-
+			rest := value[3:]
+			if rest != "" {
+				currentValue += rest
+			}
 			if !strings.HasSuffix(line, "\\") {
 				currentValue += "\n"
 			}
