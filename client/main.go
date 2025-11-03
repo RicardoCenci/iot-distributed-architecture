@@ -19,7 +19,6 @@ const DEFAULT_CONFIG_FILE = "config.toml"
 
 func main() {
 
-	// TODO: criar testes unitarios para todos os componentes
 	configFile := flag.String("config", DEFAULT_CONFIG_FILE, "config file")
 
 	flag.Parse()
