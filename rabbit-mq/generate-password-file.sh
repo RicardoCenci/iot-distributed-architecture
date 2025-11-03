@@ -12,6 +12,9 @@ if [ -z "$output_file" ]; then
 	echo ""
 fi
 
+output_dir=$(dirname "$output_file")
+mkdir -p "$output_dir"
+
 salt=$(openssl rand -hex 4)
 hash=$(echo -n "$(echo -n $salt | xxd -r -p)${password}" | openssl dgst -sha256 -binary | xxd -p -c 256)
 password_hash=$(echo -n "${salt}${hash}" | xxd -r -p | base64)
