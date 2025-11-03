@@ -56,6 +56,7 @@ services:
     secrets:
       - RABBITMQ_ADMIN_PASSWORD_HASH
       - RABBITMQ_METRICS_PASSWORD_HASH
+      - RABBITMQ_DATA_WORKER_PASSWORD_HASH
 
 volumes:
   rabbitmq_data:
@@ -74,5 +75,9 @@ secrets:
     file: ./rabbit-mq/secrets/metrics-password-hash
   RABBITMQ_METRICS_PASSWORD:
     file: ./rabbit-mq/secrets/metrics-password
+  RABBITMQ_DATA_WORKER_PASSWORD:
+    file: ./rabbit-mq/secrets/data-worker-password
+  RABBITMQ_DATA_WORKER_PASSWORD_HASH:
+    file: ./rabbit-mq/secrets/data-worker-password-hash
   GF_SECURITY_ADMIN_PASSWORD:
     file: ./grafana/secrets/admin-password

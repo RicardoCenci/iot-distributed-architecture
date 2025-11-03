@@ -2,6 +2,10 @@ PASSWORD_GENERATOR_SCRIPT = ./rabbit-mq/generate-password-file.sh
 
 ADMIN_PASSWORD_FILE = ./rabbit-mq/secrets/admin-password
 ADMIN_PASSWORD_HASH_FILE = ./rabbit-mq/secrets/admin-password-hash
+
+DATA_WORKER_PASSWORD_FILE = ./rabbit-mq/secrets/data-worker-password
+DATA_WORKER_PASSWORD_HASH_FILE = ./rabbit-mq/secrets/data-worker-password-hash
+
 GF_SECURITY_ADMIN_PASSWORD_FILE = ./grafana/secrets/admin-password
 
 generate-random-password:
