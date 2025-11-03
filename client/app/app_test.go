@@ -33,7 +33,7 @@ func TestNewApp(t *testing.T) {
 				config.TopicMetrics:  {Topic: "test/metrics"},
 			},
 		},
-		Log: config.LogConfig{Level: "info"},
+		Log: logger.Config{Level: "info"},
 	}
 	dev := device.NewDevice("test-device", drivers.NewRandomDataDriver())
 	log := &mockLogger{}
@@ -62,7 +62,7 @@ func TestApp_Run_ContextCancel(t *testing.T) {
 				config.TopicMetrics:  {Topic: "test/metrics"},
 			},
 		},
-		Log: config.LogConfig{Level: "info"},
+		Log: logger.Config{Level: "info"},
 	}
 	dev := device.NewDevice("test-device", drivers.NewRandomDataDriver())
 	log := &mockLogger{}
@@ -100,7 +100,7 @@ func TestApp_Run_MessageEnqueuing(t *testing.T) {
 				config.TopicMetrics:  {Topic: "test/metrics"},
 			},
 		},
-		Log: config.LogConfig{Level: "info"},
+		Log: logger.Config{Level: "info"},
 	}
 	dev := device.NewDevice("test-device", drivers.NewRandomDataDriver())
 	log := &mockLogger{}
