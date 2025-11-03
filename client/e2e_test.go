@@ -10,7 +10,7 @@ import (
 	"github.com/RicardoCenci/iot-distributed-architecture/client/config"
 	"github.com/RicardoCenci/iot-distributed-architecture/client/device"
 	"github.com/RicardoCenci/iot-distributed-architecture/client/drivers"
-	"github.com/RicardoCenci/iot-distributed-architecture/client/logger"
+	"github.com/RicardoCenci/iot-distributed-architecture/shared/logger"
 )
 
 func TestE2E_AppLifecycle(t *testing.T) {
@@ -26,14 +26,22 @@ func TestE2E_AppLifecycle(t *testing.T) {
 			config.TopicDataJSON: {Topic: "iot/e2e/test/data"},
 			config.TopicMetrics:  {Topic: "iot/e2e/test/metrics"},
 		}),
-		config.WithLog(config.LogConfig{Level: "info"}),
+		config.WithLog(logger.Config{Level: "info"}),
 	)
 
 	if err := cfg.Validate(); err != nil {
 		t.Fatalf("Config validation failed: %v", err)
 	}
 
-	log := logger.NewSlogLogger(cfg)
+	loggerConfig := logger.Config{
+		Level: cfg.Log.Level,
+		Source: logger.SourceConfig{
+			Enabled:  cfg.Log.Source.Enabled,
+			Relative: cfg.Log.Source.Relative,
+			AsJSON:   cfg.Log.Source.AsJSON,
+		},
+	}
+	log := logger.NewSlogLogger(loggerConfig)
 	dev := device.NewDevice(cfg.Device.ID, drivers.NewRandomDataDriver())
 	appInstance := app.NewApp(cfg, dev, log)
 
@@ -170,7 +178,15 @@ topic=iot/e2e/integration/metrics
 		t.Fatalf("Config validation failed: %v", err)
 	}
 
-	log := logger.NewSlogLogger(cfg)
+	loggerConfig := logger.Config{
+		Level: cfg.Log.Level,
+		Source: logger.SourceConfig{
+			Enabled:  cfg.Log.Source.Enabled,
+			Relative: cfg.Log.Source.Relative,
+			AsJSON:   cfg.Log.Source.AsJSON,
+		},
+	}
+	log := logger.NewSlogLogger(loggerConfig)
 	driver := drivers.NewRandomDataDriver()
 	dev := device.NewDevice(cfg.Device.ID, driver)
 	appInstance := app.NewApp(cfg, dev, log)

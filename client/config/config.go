@@ -3,6 +3,8 @@ package config
 import (
 	"fmt"
 	"time"
+
+	"github.com/RicardoCenci/iot-distributed-architecture/shared/logger"
 )
 
 var defaultBackoffConfig = BackoffConfig{
@@ -19,7 +21,7 @@ var defaultBufferConfig = BufferConfig{
 
 func NewConfig(options ...Option) *Config {
 	config := &Config{
-		Log: LogConfig{
+		Log: logger.Config{
 			Level: "info",
 		},
 	}

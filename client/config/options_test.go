@@ -2,11 +2,13 @@ package config
 
 import (
 	"testing"
+
+	"github.com/RicardoCenci/iot-distributed-architecture/shared/logger"
 )
 
 func TestConfigOptions(t *testing.T) {
 	t.Run("WithLog", func(t *testing.T) {
-		cfg := NewConfig(WithLog(LogConfig{Level: "debug"}))
+		cfg := NewConfig(WithLog(logger.Config{Level: "debug"}))
 		if cfg.Log.Level != "debug" {
 			t.Errorf("WithLog() Level = %v, want %v", cfg.Log.Level, "debug")
 		}
@@ -74,7 +76,7 @@ func TestConfigOptions(t *testing.T) {
 
 	t.Run("Merge multiple options", func(t *testing.T) {
 		cfg := NewConfig(
-			WithLog(LogConfig{Level: "debug"}),
+			WithLog(logger.Config{Level: "debug"}),
 			WithDevice(DeviceConfig{ID: "test-device"}),
 			WithBroker("tcp://localhost:1883"),
 			WithQoS(1),

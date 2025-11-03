@@ -4,8 +4,8 @@ import (
 	"context"
 	"time"
 
-	"github.com/RicardoCenci/iot-distributed-architecture/client/logger"
 	"github.com/RicardoCenci/iot-distributed-architecture/client/queue"
+	"github.com/RicardoCenci/iot-distributed-architecture/shared/logger"
 )
 
 type BufferedPublisher[T any] struct {

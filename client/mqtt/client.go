@@ -3,7 +3,7 @@ package mqtt
 import (
 	"fmt"
 
-	"github.com/RicardoCenci/iot-distributed-architecture/client/logger"
+	"github.com/RicardoCenci/iot-distributed-architecture/shared/logger"
 	mqttProvider "github.com/eclipse/paho.mqtt.golang"
 )
 

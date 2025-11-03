@@ -8,9 +8,9 @@ import (
 
 	"github.com/RicardoCenci/iot-distributed-architecture/client/config"
 	"github.com/RicardoCenci/iot-distributed-architecture/client/device"
-	"github.com/RicardoCenci/iot-distributed-architecture/client/logger"
 	"github.com/RicardoCenci/iot-distributed-architecture/client/mqtt"
 	"github.com/RicardoCenci/iot-distributed-architecture/client/queue"
+	"github.com/RicardoCenci/iot-distributed-architecture/shared/logger"
 )
 
 type App struct {

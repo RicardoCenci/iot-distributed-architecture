@@ -1,6 +1,10 @@
 package config
 
-import "time"
+import (
+	"time"
+
+	"github.com/RicardoCenci/iot-distributed-architecture/shared/logger"
+)
 
 type DeviceConfig struct {
 	ID string `json:"id"`
@@ -42,27 +46,16 @@ type MQTTConfig struct {
 	QoS    int                   `json:"qos"`
 }
 
-type LogConfig struct {
-	Level  string          `json:"level"`
-	Source LogSourceConfig `json:"source,omitempty"`
-}
-
-type LogSourceConfig struct {
-	Enabled  bool `json:"enabled,omitempty"`
-	Relative bool `json:"relative,omitempty"`
-	AsJSON   bool `json:"as_json,omitempty"`
-}
-
 type Config struct {
-	Log    LogConfig    `json:"log"`
-	Device DeviceConfig `json:"device"`
-	WiFi   *WiFiConfig  `json:"wifi,omitempty"`
-	MQTT   MQTTConfig   `json:"mqtt"`
+	Log    logger.Config `json:"log"`
+	Device DeviceConfig  `json:"device"`
+	WiFi   *WiFiConfig   `json:"wifi,omitempty"`
+	MQTT   MQTTConfig    `json:"mqtt"`
 }
 
 type Option func(*Config)
 
-func WithLog(log LogConfig) Option {
+func WithLog(log logger.Config) Option {
 	return func(c *Config) {
 		c.Log = log
 	}
