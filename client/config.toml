@@ -1,0 +1,40 @@
+[log]
+level=debug
+
+[log.source]
+enabled=false
+relative=true
+as_json=true
+
+[device]
+id="1c1363fb-1ca4-49da-9766-637be9638bd8"
+
+[mqtt]
+broker=tcp://test.mosquitto.org:1883
+qos=1
+
+[mqtt.topics.data_json]
+topic=iot/device/data/json
+
+#[mqtt.topics.data_json.buffer]
+#capacity=10
+
+#[mqtt.topics.data_json.buffer.backoff]
+#baseInSeconds=2
+#factor=2
+#maxDelayInSeconds=10
+#maxRetries=3
+
+[mqtt.topics.metrics]
+topic=iot/device/metrics
+
+#[mqtt.topics.metrics.buffer]
+#capacity=10
+
+[mqtt.topics.metrics.buffer.backoff]
+#baseInSeconds=3
+# factor=2
+# maxDelayInSeconds=10
+# maxRetries=3
+
+
