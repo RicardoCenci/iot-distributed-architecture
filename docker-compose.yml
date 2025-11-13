@@ -59,7 +59,9 @@ services:
       - RABBITMQ_DATA_WORKER_PASSWORD_HASH
 
   workers-data:
-    build: ./workers/data
+    build: 
+      context: .
+      dockerfile: workers/data/Dockerfile
     container_name: workers-data
     environment:
       - RABBITMQ_USER=data-worker
