@@ -30,14 +30,18 @@ func main() {
 
 	logger := logger.NewSlogLogger(loggerConfig)
 
+	url := fmt.Sprintf(
+		"amqp://%s:%s@%s:%s",
+		config.User,
+		config.Password,
+		config.Domain,
+		config.Port,
+	)
+
+	logger.Debug("Connecting to RabbitMQ with URL", "url", url)
+
 	rabbitMQ := rabbitmq.NewBroker(
-		fmt.Sprintf(
-			"amqp://%s:%s@%s:%s",
-			config.User,
-			config.Password,
-			config.Domain,
-			config.Port,
-		),
+		url,
 		logger,
 	)
 

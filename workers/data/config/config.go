@@ -28,18 +28,26 @@ func NewConfig() *Config {
 		return nil
 	}
 
-	password, err := getFromSecret("RABBITMQ_PASSWORD")
+	password, err := getFromSecret("RABBITMQ_DATA_WORKER_PASSWORD")
 
 	if err != nil {
-		log.Fatalf("Failed to read secret RABBITMQ_PASSWORD: %v", err)
+		log.Fatalf("Failed to read secret RABBITMQ_DATA_WORKER_PASSWORD: %v", err)
 	}
 
 	return &Config{
-		User:      getStringEnv("RABBITMQ_USER", fileConfig.User),
+		User:      getStringEnv("RABBITMQ_DATA_WORKER_USER", fileConfig.User),
 		Password:  password,
 		Domain:    getStringEnv("RABBITMQ_DOMAIN", fileConfig.Domain),
 		Port:      getStringEnv("RABBITMQ_PORT", fileConfig.Port),
-		QueueName: getStringEnv("RABBITMQ_QUEUE_NAME", fileConfig.QueueName),
+		QueueName: getStringEnv("RABBITMQ_DATA_WORKER_QUEUE_NAME", fileConfig.QueueName),
+		Log: logger.Config{
+			Level: getStringEnv("LOG_LEVEL", "debug"),
+			Source: logger.SourceConfig{
+				Enabled:  getBoolEnv("LOG_SOURCE_ENABLED", true),
+				Relative: getBoolEnv("LOG_SOURCE_RELATIVE", true),
+				AsJSON:   getBoolEnv("LOG_SOURCE_AS_JSON", false),
+			},
+		},
 	}
 }
 
@@ -53,6 +61,14 @@ func getFromFile(path string) (*Config, error) {
 	json.Unmarshal(config, &configData)
 
 	return &configData, nil
+}
+
+func getBoolEnv(key string, defaultValue bool) bool {
+	value := os.Getenv(key)
+	if value == "" {
+		return defaultValue
+	}
+	return value == "true"
 }
 
 func getStringEnv(key string, defaultValue string) string {

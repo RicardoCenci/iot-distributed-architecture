@@ -14,7 +14,7 @@
 			"tags": "monitoring"
 		},
 		{
-			"name": "data-worker",
+			"name": "${RABBITMQ_DATA_WORKER_USER}",
 			"password_hash": "${RABBITMQ_DATA_WORKER_PASSWORD_HASH}",
 			"hashing_algorithm": "rabbit_password_hashing_sha256",
 			"tags": "worker"
@@ -34,11 +34,11 @@
 			"read": ""
 		},
 		{
-			"user": "data-worker",
+			"user": "${RABBITMQ_DATA_WORKER_USER}",
 			"vhost": "/",
-			"configure": "^data-queue$",
+			"configure": "^${RABBITMQ_DATA_WORKER_QUEUE_NAME}$",
 			"write": "",
-			"read": "^data-queue$"
+			"read": "^${RABBITMQ_DATA_WORKER_QUEUE_NAME}$"
 		}
 	],
 	"parameters": [],
@@ -47,7 +47,7 @@
 	"exchanges": [],
 	"queues": [
 		{
-			"name": "data-queue",
+			"name": "${RABBITMQ_DATA_WORKER_QUEUE_NAME}",
 			"vhost": "/",
 			"durable": true,
 			"auto_delete": false,

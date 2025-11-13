@@ -36,6 +36,8 @@ services:
   rabbitmq:
     build: ./rabbit-mq
     container_name: rabbitmq
+    env_file:
+      - .env
     ports:
       - "5672:5672" # AMQP port
       - "15692:15692" # Prometheus metrics port
@@ -63,11 +65,8 @@ services:
       context: .
       dockerfile: workers/data/Dockerfile
     container_name: workers-data
-    environment:
-      - RABBITMQ_USER=data-worker
-      - RABBITMQ_DOMAIN=localhost
-      - RABBITMQ_PORT=5672
-      - RABBITMQ_QUEUE_NAME=data-queue
+    env_file:
+      - .env
     networks:
       - monitoring
     restart: unless-stopped
