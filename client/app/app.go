@@ -47,7 +47,7 @@ func (a *App) Run(ctx context.Context) {
 
 	a.logger.Info("Starting application")
 
-	client, err := mqtt.NewClient(a.logger, a.config.MQTT.Broker, a.config.Device.ID)
+	client, err := mqtt.NewClient(a.logger, a.config.MQTT.Broker, a.config.Device.ID, a.config.MQTT.User, a.config.MQTT.Password)
 
 	if err != nil {
 		a.logger.Error("Failed to create MQTT client", "error", err)
@@ -99,12 +99,15 @@ func (a *App) Run(ctx context.Context) {
 	}
 
 	var wg sync.WaitGroup
-	wg.Add(1)
 
-	go func() {
-		defer wg.Done()
-		dataPublisher.Run(ctx)
-	}()
+	if !a.config.MQTT.Topics[config.TopicDataJSON].IsDisabled {
+		wg.Add(1)
+
+		go func() {
+			defer wg.Done()
+			dataPublisher.Run(ctx)
+		}()
+	}
 
 	wg.Add(1)
 	go func() {
@@ -151,16 +154,18 @@ func (a *App) Run(ctx context.Context) {
 
 			metricData := a.device.GetSystemMetrics()
 
-			metricPublisher.Queue.Enqueue(queue.Message[MetricMessage]{
-				Data: MetricMessage{
-					DeviceID:     a.device.DeviceID,
-					Timestamp:    timestamp,
-					CPUUsage:     metricData.CPUUsage,
-					MemoryUsage:  metricData.MemoryUsage,
-					DiskUsage:    metricData.DiskUsage,
-					NetworkUsage: metricData.NetworkUsage,
-				},
-			})
+			if !a.config.MQTT.Topics[config.TopicMetrics].IsDisabled {
+				metricPublisher.Queue.Enqueue(queue.Message[MetricMessage]{
+					Data: MetricMessage{
+						DeviceID:     a.device.DeviceID,
+						Timestamp:    timestamp,
+						CPUUsage:     metricData.CPUUsage,
+						MemoryUsage:  metricData.MemoryUsage,
+						DiskUsage:    metricData.DiskUsage,
+						NetworkUsage: metricData.NetworkUsage,
+					},
+				})
+			}
 		case <-logPublishMetricsTick.C:
 			dataMetrics.Print(a.logger)
 			metricMetrics.Print(a.logger)

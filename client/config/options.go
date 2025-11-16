@@ -36,14 +36,17 @@ type BufferConfig struct {
 }
 
 type TopicConfig struct {
-	Topic  string       `json:"topic"`
-	Buffer BufferConfig `json:"buffer"`
+	Topic      string       `json:"topic"`
+	IsDisabled bool         `json:"is_disabled"`
+	Buffer     BufferConfig `json:"buffer"`
 }
 
 type MQTTConfig struct {
-	Broker string                `json:"broker"`
-	Topics map[Topic]TopicConfig `json:"topics"`
-	QoS    int                   `json:"qos"`
+	Broker   string                `json:"broker"`
+	User     string                `json:"user"`
+	Password string                `json:"password"`
+	Topics   map[Topic]TopicConfig `json:"topics"`
+	QoS      int                   `json:"qos"`
 }
 
 type Config struct {

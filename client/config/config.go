@@ -82,6 +82,18 @@ func (c *Config) LoadFromTomlFile(filename string) error {
 		}
 	}
 
+	if v := configMap.Get("mqtt.user"); v != nil {
+		if s, ok := v.(string); ok {
+			c.MQTT.User = s
+		}
+	}
+
+	if v := configMap.Get("mqtt.password"); v != nil {
+		if s, ok := v.(string); ok {
+			c.MQTT.Password = s
+		}
+	}
+
 	if v := configMap.Get("mqtt.qos"); v != nil {
 		switch n := v.(type) {
 		case int:
@@ -103,7 +115,14 @@ func (c *Config) LoadFromTomlFile(filename string) error {
 				}
 
 				cfg := TopicConfig{
-					Topic: s["topic"].(string),
+					Topic:      s["topic"].(string),
+					IsDisabled: false,
+				}
+
+				if v := s["isDisabled"]; v != nil {
+					if b, ok := v.(bool); ok {
+						cfg.IsDisabled = b
+					}
 				}
 
 				cfg.Buffer = defaultBufferConfig
@@ -200,6 +219,14 @@ func (c *Config) Validate() error {
 
 	if c.Log.Level != "debug" && c.Log.Level != "info" && c.Log.Level != "warn" && c.Log.Level != "error" {
 		return fmt.Errorf("log level must be debug, info, warn or error")
+	}
+
+	if c.MQTT.User == "" {
+		return fmt.Errorf("mqtt user is required")
+	}
+
+	if c.MQTT.Password == "" {
+		return fmt.Errorf("mqtt password is required")
 	}
 
 	return nil

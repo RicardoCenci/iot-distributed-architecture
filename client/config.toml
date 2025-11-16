@@ -10,11 +10,13 @@ as_json=true
 id="1c1363fb-1ca4-49da-9766-637be9638bd8"
 
 [mqtt]
-broker=tcp://test.mosquitto.org:1883
+broker=tcp://localhost:1883
+user=iot-user
+password=GgRbjEzIf8aASduDmYa8yIGMyWElLws9
 qos=1
 
 [mqtt.topics.data_json]
-topic=iot/device/data/json
+topic=iot.device.data.json
 
 #[mqtt.topics.data_json.buffer]
 #capacity=10
@@ -26,6 +28,7 @@ topic=iot/device/data/json
 #maxRetries=3
 
 [mqtt.topics.metrics]
+isDisabled=true
 topic=iot/device/metrics
 
 #[mqtt.topics.metrics.buffer]

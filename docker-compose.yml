@@ -40,6 +40,7 @@ services:
       - .env
     ports:
       - "5672:5672" # AMQP port
+      - "15672:15672" # Management UI port
       - "15692:15692" # Prometheus metrics port
       - "1883:1883" # MQTT port
     volumes:
@@ -59,6 +60,7 @@ services:
       - RABBITMQ_ADMIN_PASSWORD_HASH
       - RABBITMQ_METRICS_PASSWORD_HASH
       - RABBITMQ_DATA_WORKER_PASSWORD_HASH
+      - RABBITMQ_CLIENT_USER_PASSWORD_HASH
 
   workers-data:
     build: 
@@ -96,3 +98,7 @@ secrets:
     file: ./rabbit-mq/secrets/data-worker-password-hash
   GF_SECURITY_ADMIN_PASSWORD:
     file: ./grafana/secrets/admin-password
+  RABBITMQ_CLIENT_USER_PASSWORD_HASH:
+    file: ./rabbit-mq/secrets/client-user-password-hash
+  RABBITMQ_CLIENT_USER_PASSWORD:
+    file: ./rabbit-mq/secrets/client-user-password

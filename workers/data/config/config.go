@@ -38,7 +38,7 @@ func NewConfig() *Config {
 		User:      getStringEnv("RABBITMQ_DATA_WORKER_USER", fileConfig.User),
 		Password:  password,
 		Domain:    getStringEnv("RABBITMQ_DOMAIN", fileConfig.Domain),
-		Port:      getStringEnv("RABBITMQ_PORT", fileConfig.Port),
+		Port:      getStringEnv("RABBITMQ_AMQP_PORT", fileConfig.Port),
 		QueueName: getStringEnv("RABBITMQ_DATA_WORKER_QUEUE_NAME", fileConfig.QueueName),
 		Log: logger.Config{
 			Level: getStringEnv("LOG_LEVEL", "debug"),

@@ -4,17 +4,20 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/RicardoCenci/iot-distributed-architecture/shared/logger"
 	"github.com/RicardoCenci/iot-distributed-architecture/workers/data/broker"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
 type DataConsumer struct {
 	broker broker.MessageBroker
+	logger logger.Interface
 }
 
-func NewDataConsumer(broker broker.MessageBroker) *DataConsumer {
+func NewDataConsumer(broker broker.MessageBroker, logger logger.Interface) *DataConsumer {
 	return &DataConsumer{
 		broker: broker,
+		logger: logger,
 	}
 }
 

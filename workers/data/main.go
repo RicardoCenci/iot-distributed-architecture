@@ -52,9 +52,11 @@ func main() {
 
 	defer rabbitMQ.Close()
 
-	consumer := consumer.NewDataConsumer(rabbitMQ)
+	consumer := consumer.NewDataConsumer(rabbitMQ, logger)
 
 	queue := rabbitmq.NewQueue(config.QueueName)
+
+	logger.Debug("Setting up queue channel", "queue", queue.GetName())
 
 	if err := rabbitMQ.SetupQueueChannel(queue); err != nil {
 		logger.Error("Failed to setup queue channel", "error", err)
@@ -64,7 +66,7 @@ func main() {
 	logger.Info("Starting consumer")
 
 	if err := consumer.Start(context.Background(), queue, func(delivery amqp.Delivery) error {
-		logger.Info("Processing message", "message", delivery.Body)
+		logger.Info("Processing message", "message", string(delivery.Body))
 		return nil
 	}); err != nil {
 		logger.Error("Failed to start consumer", "error", err)

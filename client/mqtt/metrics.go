@@ -49,6 +49,7 @@ func (m *Metrics) GetNumberOfMessages() int64 {
 }
 
 func (m *Metrics) Print(logger logger.Interface) {
+
 	logger.Info(
 		"Topic Metrics",
 		"topic", m.topic,

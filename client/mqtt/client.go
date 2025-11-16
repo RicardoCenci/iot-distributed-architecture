@@ -16,10 +16,14 @@ func NewClient(
 	logger logger.Interface,
 	broker string,
 	clientID string,
+	user string,
+	password string,
 ) (*Client, error) {
 	options := mqttProvider.NewClientOptions()
 	options.AddBroker(broker)
 	options.SetClientID(clientID)
+	options.SetUsername(user)
+	options.SetPassword(password)
 
 	options.OnConnect = func(client mqttProvider.Client) {
 		logger.Debug("Connected to MQTT broker")
@@ -31,7 +35,10 @@ func NewClient(
 
 	client := mqttProvider.NewClient(options)
 
-	logger.Debug("Connecting to MQTT broker")
+	logger.Debug("Connecting to MQTT broker",
+		"broker", broker,
+		"clientID", clientID,
+	)
 	token := client.Connect()
 
 	if token.Wait() && token.Error() != nil {

@@ -40,7 +40,7 @@ broker=tcp://localhost:1883
 qos=1
 
 [mqtt.topics.data_json]
-topic=iot/device/data/json
+topic=iot.device.data.json
 
 [mqtt.topics.metrics]
 topic=iot/device/metrics`,
@@ -51,7 +51,7 @@ topic=iot/device/metrics`,
 					c.Device.ID == "test-device-123" &&
 					c.MQTT.Broker == "tcp://localhost:1883" &&
 					c.MQTT.QoS == 1 &&
-					c.MQTT.Topics[TopicDataJSON].Topic == "iot/device/data/json" &&
+					c.MQTT.Topics[TopicDataJSON].Topic == "iot.device.data.json" &&
 					c.MQTT.Topics[TopicMetrics].Topic == "iot/device/metrics"
 			},
 		},
@@ -65,7 +65,7 @@ broker=tcp://localhost:1883
 qos=1
 
 [mqtt.topics.data_json]
-topic=iot/device/data/json
+topic=iot.device.data.json
 
 [mqtt.topics.data_json.buffer]
 capacity=5
@@ -97,7 +97,7 @@ broker=tcp://localhost:1883
 qos=1
 
 [mqtt.topics.data_json]
-topic=iot/device/data/json
+topic=iot.device.data.json
 
 [mqtt.topics.metrics]
 topic=iot/device/metrics
@@ -162,7 +162,7 @@ func TestConfig_Validate(t *testing.T) {
 					Broker: "tcp://localhost:1883",
 					QoS:    1,
 					Topics: map[Topic]TopicConfig{
-						TopicDataJSON: {Topic: "iot/device/data/json"},
+						TopicDataJSON: {Topic: "iot.device.data.json"},
 						TopicMetrics:  {Topic: "iot/device/metrics"},
 					},
 				},
@@ -177,7 +177,7 @@ func TestConfig_Validate(t *testing.T) {
 					Broker: "tcp://localhost:1883",
 					QoS:    1,
 					Topics: map[Topic]TopicConfig{
-						TopicDataJSON: {Topic: "iot/device/data/json"},
+						TopicDataJSON: {Topic: "iot.device.data.json"},
 						TopicMetrics:  {Topic: "iot/device/metrics"},
 					},
 				},
@@ -192,7 +192,7 @@ func TestConfig_Validate(t *testing.T) {
 				MQTT: MQTTConfig{
 					QoS: 1,
 					Topics: map[Topic]TopicConfig{
-						TopicDataJSON: {Topic: "iot/device/data/json"},
+						TopicDataJSON: {Topic: "iot.device.data.json"},
 						TopicMetrics:  {Topic: "iot/device/metrics"},
 					},
 				},
@@ -208,7 +208,7 @@ func TestConfig_Validate(t *testing.T) {
 					Broker: "tcp://localhost:1883",
 					QoS:    3,
 					Topics: map[Topic]TopicConfig{
-						TopicDataJSON: {Topic: "iot/device/data/json"},
+						TopicDataJSON: {Topic: "iot.device.data.json"},
 						TopicMetrics:  {Topic: "iot/device/metrics"},
 					},
 				},
@@ -267,7 +267,7 @@ func TestConfig_Validate(t *testing.T) {
 					Broker: "tcp://localhost:1883",
 					QoS:    1,
 					Topics: map[Topic]TopicConfig{
-						TopicDataJSON: {Topic: "iot/device/data/json"},
+						TopicDataJSON: {Topic: "iot.device.data.json"},
 						TopicMetrics:  {Topic: "iot/device/metrics"},
 					},
 				},
@@ -284,7 +284,7 @@ func TestConfig_Validate(t *testing.T) {
 					Broker: "tcp://localhost:1883",
 					QoS:    1,
 					Topics: map[Topic]TopicConfig{
-						TopicDataJSON: {Topic: "iot/device/data/json"},
+						TopicDataJSON: {Topic: "iot.device.data.json"},
 						TopicMetrics:  {Topic: "iot/device/metrics"},
 					},
 				},
@@ -299,7 +299,7 @@ func TestConfig_Validate(t *testing.T) {
 					Broker: "tcp://localhost:1883",
 					QoS:    1,
 					Topics: map[Topic]TopicConfig{
-						TopicDataJSON: {Topic: "iot/device/data/json"},
+						TopicDataJSON: {Topic: "iot.device.data.json"},
 						TopicMetrics:  {Topic: "iot/device/metrics"},
 					},
 				},
