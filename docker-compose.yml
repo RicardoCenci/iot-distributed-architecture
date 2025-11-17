@@ -62,6 +62,32 @@ services:
       - RABBITMQ_DATA_WORKER_PASSWORD_HASH
       - RABBITMQ_CLIENT_USER_PASSWORD_HASH
 
+  timescaledb:
+    image: timescale/timescaledb:latest-pg16
+    container_name: timescaledb
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: ${TIMESCALEDB_DATABASE:-iot_data}
+      POSTGRES_USER: ${TIMESCALEDB_USER:-postgres}
+      POSTGRES_PASSWORD: ${TIMESCALEDB_PASSWORD:-}
+    env_file:
+      - .env
+    volumes:
+      - timescaledb_data:/var/lib/postgresql/data
+    networks:
+      - monitoring
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d ${TIMESCALEDB_DATABASE:-iot_data}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    secrets:
+      - TIMESCALEDB_PASSWORD
+    entrypoint: ["sh", "-c", "export POSTGRES_PASSWORD=$(cat /run/secrets/TIMESCALEDB_PASSWORD) && exec docker-entrypoint.sh postgres"]
+
   workers-data:
     build: 
       context: .
@@ -69,16 +95,27 @@ services:
     container_name: workers-data
     env_file:
       - .env
+    environment:
+      TIMESCALEDB_HOST: ${TIMESCALEDB_HOST:-timescaledb}
+      TIMESCALEDB_PORT: ${TIMESCALEDB_PORT:-5432}
+      TIMESCALEDB_USER: ${TIMESCALEDB_USER:-postgres}
+      TIMESCALEDB_DATABASE: ${TIMESCALEDB_DATABASE:-iot_data}
+      TIMESCALEDB_SSL_MODE: disable
     networks:
       - monitoring
     restart: unless-stopped
+    depends_on:
+      timescaledb:
+        condition: service_healthy
     secrets:
       - RABBITMQ_DATA_WORKER_PASSWORD
+      - TIMESCALEDB_PASSWORD
 
 volumes:
   rabbitmq_data:
   grafana_data:
   prometheus_data:
+  timescaledb_data:
 
 
 networks:
@@ -102,3 +139,5 @@ secrets:
     file: ./rabbit-mq/secrets/client-user-password-hash
   RABBITMQ_CLIENT_USER_PASSWORD:
     file: ./rabbit-mq/secrets/client-user-password
+  TIMESCALEDB_PASSWORD:
+    file: ./workers/data/secrets/timescaledb-password

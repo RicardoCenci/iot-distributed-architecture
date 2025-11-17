@@ -11,6 +11,8 @@ import (
 	"github.com/RicardoCenci/iot-distributed-architecture/workers/data/broker/rabbitmq"
 	"github.com/RicardoCenci/iot-distributed-architecture/workers/data/config"
 	"github.com/RicardoCenci/iot-distributed-architecture/workers/data/consumer"
+	"github.com/RicardoCenci/iot-distributed-architecture/workers/data/database"
+	"github.com/RicardoCenci/iot-distributed-architecture/workers/data/parser"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
@@ -52,6 +54,22 @@ func main() {
 
 	defer rabbitMQ.Close()
 
+	logger.Debug("Connecting to TimescaleDB")
+
+	connectionString := config.TimescaleDB.ConnectionString()
+
+	logger.Debug("TimescaleDB connection string", "connectionString", connectionString)
+
+	db, err := database.NewDatabase(connectionString)
+	if err != nil {
+		logger.Error("Failed to connect to TimescaleDB", "error", err)
+		os.Exit(1)
+	}
+
+	defer db.Close()
+
+	logger.Info("Connected to TimescaleDB")
+
 	consumer := consumer.NewDataConsumer(rabbitMQ, logger)
 
 	queue := rabbitmq.NewQueue(config.QueueName)
@@ -66,7 +84,18 @@ func main() {
 	logger.Info("Starting consumer")
 
 	if err := consumer.Start(context.Background(), queue, func(delivery amqp.Delivery) error {
-		logger.Info("Processing message", "message", string(delivery.Body))
+		logger.Debug("Received message", "message", string(delivery.Body))
+
+		sensorData, err := parser.ParseMessage(delivery.Body)
+		if err != nil {
+			logger.Error("Failed to parse message", "error", err, "message", string(delivery.Body))
+			return err
+		}
+
+		if err := db.InsertSensorData(sensorData); err != nil {
+			logger.Error("Failed to insert sensor data", "error", err)
+			return err
+		}
 		return nil
 	}); err != nil {
 		logger.Error("Failed to start consumer", "error", err)

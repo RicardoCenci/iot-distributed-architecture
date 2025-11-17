@@ -2,5 +2,13 @@
     "rabbitmq_user": "data-worker",
     "rabbitmq_domain": "localhost",
     "rabbitmq_port": "5672",
-    "rabbitmq_queue_name": "data-queue"
+    "rabbitmq_queue_name": "data-queue",
+    "timescaledb": {
+        "host": "timescaledb",
+        "port": "5432",
+        "user": "postgres",
+        "password": "",
+        "database": "iot_data",
+        "ssl_mode": "disable"
+    }
 }

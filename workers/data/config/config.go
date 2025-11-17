@@ -2,6 +2,7 @@ package config
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"log"
 	"os"
@@ -11,12 +12,22 @@ import (
 )
 
 type Config struct {
-	User      string `json:"rabbitmq_user"`
-	Password  string
-	Domain    string        `json:"rabbitmq_domain"`
-	Port      string        `json:"rabbitmq_port"`
-	QueueName string        `json:"rabbitmq_queue_name"`
-	Log       logger.Config `json:"log"`
+	User        string `json:"rabbitmq_user"`
+	Password    string
+	Domain      string            `json:"rabbitmq_domain"`
+	Port        string            `json:"rabbitmq_port"`
+	QueueName   string            `json:"rabbitmq_queue_name"`
+	TimescaleDB TimescaleDBConfig `json:"timescaledb"`
+	Log         logger.Config     `json:"log"`
+}
+
+type TimescaleDBConfig struct {
+	Host     string `json:"host"`
+	Port     string `json:"port"`
+	User     string `json:"user"`
+	Password string `json:"password"`
+	Database string `json:"database"`
+	SSLMode  string `json:"ssl_mode"`
 }
 
 var DEFAULT_SECRET_PATH = getStringEnv("DEFAULT_SECRET_PATH", "/run/secrets/")
@@ -34,12 +45,25 @@ func NewConfig() *Config {
 		log.Fatalf("Failed to read secret RABBITMQ_DATA_WORKER_PASSWORD: %v", err)
 	}
 
+	dbPassword, err := getFromSecret("TIMESCALEDB_PASSWORD")
+	if err != nil {
+		log.Fatalf("Failed to read secret TIMESCALEDB_PASSWORD: %v", err)
+	}
+
 	return &Config{
 		User:      getStringEnv("RABBITMQ_DATA_WORKER_USER", fileConfig.User),
 		Password:  password,
 		Domain:    getStringEnv("RABBITMQ_DOMAIN", fileConfig.Domain),
 		Port:      getStringEnv("RABBITMQ_AMQP_PORT", fileConfig.Port),
 		QueueName: getStringEnv("RABBITMQ_DATA_WORKER_QUEUE_NAME", fileConfig.QueueName),
+		TimescaleDB: TimescaleDBConfig{
+			Host:     getStringEnv("TIMESCALEDB_HOST", fileConfig.TimescaleDB.Host),
+			Port:     getStringEnv("TIMESCALEDB_PORT", fileConfig.TimescaleDB.Port),
+			User:     getStringEnv("TIMESCALEDB_USER", fileConfig.TimescaleDB.User),
+			Password: dbPassword,
+			Database: getStringEnv("TIMESCALEDB_DATABASE", fileConfig.TimescaleDB.Database),
+			SSLMode:  getStringEnv("TIMESCALEDB_SSL_MODE", fileConfig.TimescaleDB.SSLMode),
+		},
 		Log: logger.Config{
 			Level: getStringEnv("LOG_LEVEL", "debug"),
 			Source: logger.SourceConfig{
@@ -94,4 +118,16 @@ func getFromSecret(name string) (string, error) {
 	}
 
 	return string(content), nil
+}
+
+func (c *TimescaleDBConfig) ConnectionString() string {
+	return fmt.Sprintf(
+		"host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
+		c.Host,
+		c.Port,
+		c.User,
+		c.Password,
+		c.Database,
+		c.SSLMode,
+	)
 }

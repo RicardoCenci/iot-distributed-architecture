@@ -25,6 +25,7 @@ WORKDIR /root/
 COPY --from=builder /app/main .
 
 COPY workers/data/config.json ./config.json
+COPY --from=builder /app/migrations ./migrations
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
 	CMD pgrep main || exit 1
