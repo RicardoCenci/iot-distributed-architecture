@@ -19,6 +19,12 @@ services:
   grafana:
     image: grafana/grafana:latest
     container_name: grafana
+    env_file:
+      - .env
+    environment:
+      TIMESCALEDB_DATABASE_NAME: ${TIMESCALEDB_DATABASE}
+      TIMESCALEDB_USER: ${TIMESCALEDB_USER}
+      
     ports:
       - "3000:3000"
     volumes:
@@ -32,6 +38,7 @@ services:
     restart: unless-stopped
     secrets:
       - GF_SECURITY_ADMIN_PASSWORD
+      - TIMESCALEDB_PASSWORD
 
   rabbitmq:
     build: ./rabbit-mq
