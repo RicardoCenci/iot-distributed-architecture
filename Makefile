@@ -16,6 +16,11 @@ DATA_WORKER_PASSWORD_HASH_FILE = ./rabbit-mq/secrets/data-worker-password-hash
 CLIENT_USER_PASSWORD_FILE = ./rabbit-mq/secrets/client-user-password
 CLIENT_USER_PASSWORD_HASH_FILE = ./rabbit-mq/secrets/client-user-password-hash
 
+# Password for the metrics worker to access the RabbitMQ
+METRICS_WORKER_PASSWORD_FILE = ./rabbit-mq/secrets/metrics-worker-password
+METRICS_WORKER_PASSWORD_HASH_FILE = ./rabbit-mq/secrets/metrics-worker-password-hash
+
+
 # Password for the Grafana admin to access the Grafana UI
 GF_SECURITY_ADMIN_PASSWORD_FILE = ./grafana/secrets/admin-password
 
@@ -33,6 +38,8 @@ generate-rabbitmq-secrets:
 	$(PASSWORD_GENERATOR_SCRIPT) $$random_password $(DATA_WORKER_PASSWORD_HASH_FILE); \
 	echo $$random_password > $(CLIENT_USER_PASSWORD_FILE); \
 	$(PASSWORD_GENERATOR_SCRIPT) $$random_password $(CLIENT_USER_PASSWORD_HASH_FILE); \
+	echo $$random_password > $(METRICS_WORKER_PASSWORD_FILE); \
+	$(PASSWORD_GENERATOR_SCRIPT) $$random_password $(METRICS_WORKER_PASSWORD_HASH_FILE); \
 	
 generate-grafana-secrets:
 	@mkdir -p ./grafana/secrets; \

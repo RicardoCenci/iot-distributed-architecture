@@ -1,0 +1,8 @@
+{
+    "rabbitmq_user": "metrics-worker",
+    "rabbitmq_domain": "localhost",
+    "rabbitmq_port": "5672",
+    "rabbitmq_queue_name": "metrics-queue",
+    "prometheus_address": "localhost:9090"
+}
+

@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/RicardoCenci/iot-distributed-architecture/shared/logger"
-	"github.com/RicardoCenci/iot-distributed-architecture/workers/data/broker"
+	"github.com/RicardoCenci/iot-distributed-architecture/shared/workers/broker"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 

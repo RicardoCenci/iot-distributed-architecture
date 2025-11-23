@@ -8,17 +8,15 @@ import (
 	"syscall"
 
 	"github.com/RicardoCenci/iot-distributed-architecture/shared/logger"
-	"github.com/RicardoCenci/iot-distributed-architecture/workers/data/broker/rabbitmq"
+	"github.com/RicardoCenci/iot-distributed-architecture/shared/workers/broker/rabbitmq"
+	"github.com/RicardoCenci/iot-distributed-architecture/shared/workers/consumer"
 	"github.com/RicardoCenci/iot-distributed-architecture/workers/data/config"
-	"github.com/RicardoCenci/iot-distributed-architecture/workers/data/consumer"
 	"github.com/RicardoCenci/iot-distributed-architecture/workers/data/database"
 	"github.com/RicardoCenci/iot-distributed-architecture/workers/data/parser"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
 func main() {
-	// TODO: Testar e2e com um producer
-
 	config := config.NewConfig()
 
 	loggerConfig := logger.Config{
@@ -70,7 +68,7 @@ func main() {
 
 	logger.Info("Connected to TimescaleDB")
 
-	consumer := consumer.NewDataConsumer(rabbitMQ, logger)
+	consumer := consumer.NewConsumer(rabbitMQ, logger, "data-consumer")
 
 	queue := rabbitmq.NewQueue(config.QueueName)
 

@@ -24,6 +24,12 @@
 			"password_hash": "${RABBITMQ_CLIENT_USER_PASSWORD_HASH}",
 			"hashing_algorithm": "rabbit_password_hashing_sha256",
 			"tags": "client"
+		},
+		{
+			"name": "${RABBITMQ_METRICS_WORKER_USER}",
+			"password_hash": "${RABBITMQ_METRICS_WORKER_PASSWORD_HASH}",
+			"hashing_algorithm": "rabbit_password_hashing_sha256",
+			"tags": "worker"
 		}
 	],
 	"vhosts": [
@@ -57,8 +63,15 @@
 			"user": "${RABBITMQ_CLIENT_USER}",
 			"vhost": "/",
 			"configure": "",
-			"write": "amq\\.topic|^${RABBITMQ_DATA_TOPIC}$",
+			"write": "amq\\.topic|^${RABBITMQ_DATA_TOPIC}$|^${RABBITMQ_METRICS_TOPIC}$",
 			"read": ""
+		},
+		{
+			"user": "${RABBITMQ_METRICS_WORKER_USER}",
+			"vhost": "/",
+			"configure": "^${RABBITMQ_METRICS_WORKER_QUEUE_NAME}$",
+			"write": "",
+			"read": "^${RABBITMQ_METRICS_WORKER_QUEUE_NAME}$"
 		}
 	],
 	"parameters": [],
@@ -73,11 +86,27 @@
 			"auto_delete": false,
 			"internal": false,
 			"arguments": {}
+		},
+		{
+			"name": "${RABBITMQ_METRICS_TOPIC}",
+			"vhost": "/",
+			"type": "topic",
+			"durable": true,
+			"auto_delete": false,
+			"internal": false,
+			"arguments": {}
 		}
   	],
 	"queues": [
 		{
 			"name": "${RABBITMQ_DATA_WORKER_QUEUE_NAME}",
+			"vhost": "/",
+			"durable": true,
+			"auto_delete": false,
+			"arguments": {}
+		},
+		{
+			"name": "${RABBITMQ_METRICS_WORKER_QUEUE_NAME}",
 			"vhost": "/",
 			"durable": true,
 			"auto_delete": false,
@@ -99,6 +128,22 @@
 			"destination": "${RABBITMQ_DATA_WORKER_QUEUE_NAME}",
 			"destination_type": "queue",
 			"routing_key": "${RABBITMQ_DATA_TOPIC}",
+			"arguments": {}
+		},
+		{
+			"source": "${RABBITMQ_METRICS_TOPIC}",
+			"vhost": "/",
+			"destination": "${RABBITMQ_METRICS_WORKER_QUEUE_NAME}",
+			"destination_type": "queue",
+			"routing_key": "#",
+			"arguments": {}
+		},
+		{
+			"source": "amq.topic",
+			"vhost": "/",
+			"destination": "${RABBITMQ_METRICS_WORKER_QUEUE_NAME}",
+			"destination_type": "queue",
+			"routing_key": "${RABBITMQ_METRICS_TOPIC}",
 			"arguments": {}
 		}
 	]

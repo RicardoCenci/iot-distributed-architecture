@@ -28,8 +28,8 @@ topic=iot.device.data.json
 #maxRetries=3
 
 [mqtt.topics.metrics]
-isDisabled=true
-topic=iot/device/metrics
+isDisabled=false
+topic=iot.device.metrics
 
 #[mqtt.topics.metrics.buffer]
 #capacity=10

@@ -68,6 +68,7 @@ services:
       - RABBITMQ_METRICS_PASSWORD_HASH
       - RABBITMQ_DATA_WORKER_PASSWORD_HASH
       - RABBITMQ_CLIENT_USER_PASSWORD_HASH
+      - RABBITMQ_METRICS_WORKER_PASSWORD_HASH
 
   timescaledb:
     image: timescale/timescaledb:latest-pg16
@@ -96,9 +97,11 @@ services:
     entrypoint: ["sh", "-c", "export POSTGRES_PASSWORD=$(cat /run/secrets/TIMESCALEDB_PASSWORD) && exec docker-entrypoint.sh postgres"]
 
   workers-data:
-    build: 
+    build:
       context: .
-      dockerfile: workers/data/Dockerfile
+      dockerfile: shared/workers/Dockerfile
+      args:
+        WORKER_PATH: ../workers/data
     container_name: workers-data
     env_file:
       - .env
@@ -111,12 +114,31 @@ services:
     networks:
       - monitoring
     restart: unless-stopped
+    volumes:
+      - ./workers/data/migrations:/root/migrations
+      - ./workers/data/config.json:/root/config.json
     depends_on:
       timescaledb:
         condition: service_healthy
     secrets:
       - RABBITMQ_DATA_WORKER_PASSWORD
       - TIMESCALEDB_PASSWORD
+
+  workers-metrics:
+    build:
+      context: .
+      dockerfile: shared/workers/Dockerfile
+      args:
+        WORKER_PATH: ../workers/metrics
+    container_name: workers-metrics
+    networks:
+      - monitoring
+    env_file:
+      - .env
+    volumes:
+      - ./workers/metrics/config.json:/root/config.json
+    secrets:
+      - RABBITMQ_METRICS_WORKER_PASSWORD
 
 volumes:
   rabbitmq_data:
@@ -148,3 +170,7 @@ secrets:
     file: ./rabbit-mq/secrets/client-user-password
   TIMESCALEDB_PASSWORD:
     file: ./workers/data/secrets/timescaledb-password
+  RABBITMQ_METRICS_WORKER_PASSWORD:
+    file: ./rabbit-mq/secrets/metrics-worker-password
+  RABBITMQ_METRICS_WORKER_PASSWORD_HASH:
+    file: ./rabbit-mq/secrets/metrics-worker-password-hash

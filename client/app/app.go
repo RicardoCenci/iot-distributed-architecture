@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"fmt"
+	"os"
 	"sync"
 	"time"
 
@@ -10,6 +11,7 @@ import (
 	"github.com/RicardoCenci/iot-distributed-architecture/client/device"
 	"github.com/RicardoCenci/iot-distributed-architecture/client/mqtt"
 	"github.com/RicardoCenci/iot-distributed-architecture/client/queue"
+	"github.com/RicardoCenci/iot-distributed-architecture/client/rabbitmq"
 	"github.com/RicardoCenci/iot-distributed-architecture/shared/logger"
 )
 
@@ -41,6 +43,14 @@ func NewApp(config *config.Config, device *device.Device, logger logger.Interfac
 		device: device,
 		logger: logger,
 	}
+}
+
+func getEnvOrDefault(key string, defaultValue string) string {
+	value := os.Getenv(key)
+	if value == "" {
+		return defaultValue
+	}
+	return value
 }
 
 func (a *App) Run(ctx context.Context) {
@@ -76,11 +86,27 @@ func (a *App) Run(ctx context.Context) {
 		Topic: a.config.MQTT.Topics[config.TopicDataJSON].Topic,
 	}
 
-	metricMetrics := mqtt.NewMetrics(a.config.MQTT.Topics[config.TopicMetrics].Topic)
+	rabbitMQURL := fmt.Sprintf(
+		"amqp://%s:%s@%s:%s",
+		getEnvOrDefault("RABBITMQ_CLIENT_USER", "iot-user"),
+		getEnvOrDefault("RABBITMQ_CLIENT_USER_PASSWORD", "GgRbjEzIf8aASduDmYa8yIGMyWElLws9"),
+		getEnvOrDefault("RABBITMQ_DOMAIN", "localhost"),
+		getEnvOrDefault("RABBITMQ_AMQP_PORT", "5672"),
+	)
 
-	metricPublisher := mqtt.BufferedPublisher[MetricMessage]{
+	rabbitMQClient, err := rabbitmq.NewClient(a.logger, rabbitMQURL)
+	if err != nil {
+		a.logger.Error("Failed to create RabbitMQ client", "error", err)
+		return
+	}
+	defer rabbitMQClient.Close()
+
+	metricsTopic := getEnvOrDefault("RABBITMQ_METRICS_TOPIC", "iot.device.metrics")
+	metricMetrics := rabbitmq.NewMetrics(metricsTopic)
+
+	metricPublisher := rabbitmq.BufferedPublisher[MetricMessage]{
 		Logger:  a.logger,
-		Client:  client,
+		Client:  rabbitMQClient,
 		Metrics: metricMetrics,
 		Queue: queue.New(
 			queue.WithCapacity[MetricMessage](5),
@@ -91,11 +117,12 @@ func (a *App) Run(ctx context.Context) {
 				MaxRetries: 3,
 			}),
 		),
-		MessageTransformer: func(msg MetricMessage) string {
-			return fmt.Sprintf("{'sensor_id': '%s', 'data': {'cpu_usage': %f, 'memory_usage': %f, 'disk_usage': %f, 'network_usage': %f}}", msg.DeviceID, msg.CPUUsage, msg.MemoryUsage, msg.DiskUsage, msg.NetworkUsage)
+		MessageTransformer: func(msg MetricMessage) []byte {
+			payload := fmt.Sprintf("{'sensor_id': '%s', 'data': {'cpu_usage': %f, 'memory_usage': %f, 'disk_usage': %f, 'network_usage': %f}}", msg.DeviceID, msg.CPUUsage, msg.MemoryUsage, msg.DiskUsage, msg.NetworkUsage)
+			return []byte(payload)
 		},
-		QoS:   a.config.MQTT.QoS,
-		Topic: a.config.MQTT.Topics[config.TopicMetrics].Topic,
+		Exchange:   "amq.topic",
+		RoutingKey: metricsTopic,
 	}
 
 	var wg sync.WaitGroup
@@ -135,8 +162,10 @@ func (a *App) Run(ctx context.Context) {
 			metricMetrics.Print(a.logger)
 
 			a.logger.Debug("Closing MQTT client")
-
 			client.Close()
+
+			a.logger.Debug("Closing RabbitMQ client")
+			rabbitMQClient.Close()
 			return
 		case <-ticker.C:
 			timestamp := time.Now()
@@ -154,18 +183,16 @@ func (a *App) Run(ctx context.Context) {
 
 			metricData := a.device.GetSystemMetrics()
 
-			if !a.config.MQTT.Topics[config.TopicMetrics].IsDisabled {
-				metricPublisher.Queue.Enqueue(queue.Message[MetricMessage]{
-					Data: MetricMessage{
-						DeviceID:     a.device.DeviceID,
-						Timestamp:    timestamp,
-						CPUUsage:     metricData.CPUUsage,
-						MemoryUsage:  metricData.MemoryUsage,
-						DiskUsage:    metricData.DiskUsage,
-						NetworkUsage: metricData.NetworkUsage,
-					},
-				})
-			}
+			metricPublisher.Queue.Enqueue(queue.Message[MetricMessage]{
+				Data: MetricMessage{
+					DeviceID:     a.device.DeviceID,
+					Timestamp:    timestamp,
+					CPUUsage:     metricData.CPUUsage,
+					MemoryUsage:  metricData.MemoryUsage,
+					DiskUsage:    metricData.DiskUsage,
+					NetworkUsage: metricData.NetworkUsage,
+				},
+			})
 		case <-logPublishMetricsTick.C:
 			dataMetrics.Print(a.logger)
 			metricMetrics.Print(a.logger)
