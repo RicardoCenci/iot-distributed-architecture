@@ -1,36 +1,37 @@
 package parser
 
 import (
-	"encoding/json"
+	"encoding/base64"
 	"fmt"
-	"strings"
 	"time"
 
+	protosensor "github.com/RicardoCenci/iot-distributed-architecture/shared/proto"
 	"github.com/RicardoCenci/iot-distributed-architecture/workers/data/database"
+	"google.golang.org/protobuf/proto"
 )
 
-type MessageData struct {
-	SensorID string `json:"sensor_id"`
-	Data     struct {
-		Humidity    float32 `json:"humidity"`
-		Temperature float32 `json:"temperature"`
-	} `json:"data"`
-}
-
 func ParseMessage(body []byte) (database.SensorData, error) {
-	bodyStr := string(body)
+	decoded, err := base64.StdEncoding.DecodeString(string(body))
+	if err != nil {
+		return database.SensorData{}, fmt.Errorf("failed to decode base64 message: %w", err)
+	}
 
-	bodyStr = strings.ReplaceAll(bodyStr, "'", "\"")
+	var sensorData protosensor.SensorData
+	if err := proto.Unmarshal(decoded, &sensorData); err != nil {
+		return database.SensorData{}, fmt.Errorf("failed to parse protobuf message: %w", err)
+	}
 
-	var msgData MessageData
-	if err := json.Unmarshal([]byte(bodyStr), &msgData); err != nil {
-		return database.SensorData{}, fmt.Errorf("failed to parse message: %w", err)
+	var timestamp time.Time
+	if sensorData.Timestamp > 0 {
+		timestamp = time.Unix(sensorData.Timestamp, 0)
+	} else {
+		timestamp = time.Now()
 	}
 
 	return database.SensorData{
-		DeviceID:    msgData.SensorID,
-		Timestamp:   time.Now(),
-		Humidity:    msgData.Data.Humidity,
-		Temperature: msgData.Data.Temperature,
+		DeviceID:    sensorData.SensorId,
+		Timestamp:   timestamp,
+		Humidity:    sensorData.Humidity,
+		Temperature: sensorData.Temperature,
 	}, nil
 }

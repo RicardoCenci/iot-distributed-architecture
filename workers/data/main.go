@@ -94,6 +94,8 @@ func main() {
 			logger.Error("Failed to insert sensor data", "error", err)
 			return err
 		}
+
+		logger.Info("Inserted sensor data", "data", sensorData)
 		return nil
 	}); err != nil {
 		logger.Error("Failed to start consumer", "error", err)

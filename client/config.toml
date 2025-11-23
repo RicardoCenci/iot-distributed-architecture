@@ -16,7 +16,7 @@ password=GgRbjEzIf8aASduDmYa8yIGMyWElLws9
 qos=1
 
 [mqtt.topics.data_json]
-topic=iot.device.data.json
+topic=iot.device.data.binary
 
 #[mqtt.topics.data_json.buffer]
 #capacity=10

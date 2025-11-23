@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package proto;
+
+option go_package = "github.com/RicardoCenci/iot-distributed-architecture/shared/proto";
+
+message SensorData {
+  string sensor_id = 1;
+  float humidity = 2;
+  float temperature = 3;
+  int64 timestamp = 4;
+}
+

@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
 	"os"
 	"sync"
@@ -12,6 +13,8 @@ import (
 	"github.com/RicardoCenci/iot-distributed-architecture/client/mqtt"
 	"github.com/RicardoCenci/iot-distributed-architecture/client/queue"
 	"github.com/RicardoCenci/iot-distributed-architecture/shared/logger"
+	protosensor "github.com/RicardoCenci/iot-distributed-architecture/shared/proto"
+	"google.golang.org/protobuf/proto"
 )
 
 type App struct {
@@ -78,8 +81,22 @@ func (a *App) Run(ctx context.Context) {
 				MaxRetries: 3,
 			}),
 		),
-		MessageTransformer: func(msg DataMessage) string {
-			return fmt.Sprintf("{'sensor_id': '%s', 'data': {'humidity': %f, 'temperature': %f}}", msg.DeviceID, msg.Humidity, msg.Temperature)
+		MessageTransformer: func(msg DataMessage) ([]byte, error) {
+			sensorData := &protosensor.SensorData{
+				SensorId:    msg.DeviceID,
+				Humidity:    msg.Humidity,
+				Temperature: msg.Temperature,
+				Timestamp:   msg.Timestamp.Unix(),
+			}
+
+			protoData, err := proto.Marshal(sensorData)
+			if err != nil {
+				return nil, fmt.Errorf("failed to marshal protobuf: %w", err)
+			}
+
+			encoded := make([]byte, base64.StdEncoding.EncodedLen(len(protoData)))
+			base64.StdEncoding.Encode(encoded, protoData)
+			return encoded, nil
 		},
 		QoS:   a.config.MQTT.QoS,
 		Topic: a.config.MQTT.Topics[config.TopicDataJSON].Topic,
@@ -100,8 +117,9 @@ func (a *App) Run(ctx context.Context) {
 				MaxRetries: 3,
 			}),
 		),
-		MessageTransformer: func(msg MetricMessage) string {
-			return fmt.Sprintf("{'sensor_id': '%s', 'data': {'cpu_usage': %f, 'memory_usage': %f, 'disk_usage': %f, 'network_usage': %f}}", msg.DeviceID, msg.CPUUsage, msg.MemoryUsage, msg.DiskUsage, msg.NetworkUsage)
+		MessageTransformer: func(msg MetricMessage) ([]byte, error) {
+			payload := fmt.Sprintf("{'sensor_id': '%s', 'data': {'cpu_usage': %f, 'memory_usage': %f, 'disk_usage': %f, 'network_usage': %f}}", msg.DeviceID, msg.CPUUsage, msg.MemoryUsage, msg.DiskUsage, msg.NetworkUsage)
+			return []byte(payload), nil
 		},
 		QoS:   a.config.MQTT.QoS,
 		Topic: a.config.MQTT.Topics[config.TopicMetrics].Topic,

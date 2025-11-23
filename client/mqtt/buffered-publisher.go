@@ -13,7 +13,7 @@ type BufferedPublisher[T any] struct {
 	Client             *Client
 	Metrics            *Metrics
 	Queue              *queue.Queue[T]
-	MessageTransformer func(T) string
+	MessageTransformer func(T) ([]byte, error)
 	QoS                int
 	Topic              string
 }
@@ -22,11 +22,16 @@ func (bp *BufferedPublisher[T]) Run(ctx context.Context) {
 
 	for msg := range bp.Queue.Items() {
 
-		payload := bp.MessageTransformer(msg.Data)
+		payload, err := bp.MessageTransformer(msg.Data)
+		if err != nil {
+			bp.Logger.Error("Failed to transform message", "error", err)
+			bp.Queue.RequeueWithBackoff(ctx, msg)
+			continue
+		}
 
 		startTime := time.Now()
 
-		err := bp.Client.Publish(
+		err = bp.Client.Publish(
 			bp.Topic,
 			payload,
 			bp.QoS,

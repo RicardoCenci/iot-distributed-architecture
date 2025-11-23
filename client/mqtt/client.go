@@ -51,7 +51,7 @@ func NewClient(
 	}, nil
 }
 
-func (c *Client) Publish(topic string, payload string, qos int, retained bool) error {
+func (c *Client) Publish(topic string, payload []byte, qos int, retained bool) error {
 	token := c.client.Publish(
 		topic,
 		byte(qos),

@@ -6,6 +6,7 @@ require (
 	github.com/RicardoCenci/iot-distributed-architecture/shared v0.0.0
 	github.com/eclipse/paho.mqtt.golang v1.5.1
 	github.com/rabbitmq/amqp091-go v1.10.0
+	google.golang.org/protobuf v1.34.2
 )
 
 require (
