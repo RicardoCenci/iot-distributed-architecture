@@ -1,9 +1,12 @@
 package parser
 
 import (
-	"encoding/json"
+	"encoding/base64"
 	"fmt"
-	"strings"
+	"time"
+
+	protosensor "github.com/RicardoCenci/iot-distributed-architecture/shared/proto"
+	"google.golang.org/protobuf/proto"
 )
 
 type MessageData struct {
@@ -22,23 +25,34 @@ type MetricData struct {
 	MemoryUsage  float32
 	DiskUsage    float32
 	NetworkUsage float32
+	Timestamp    time.Time
 }
 
 func ParseMessage(body []byte) (MetricData, error) {
-	bodyStr := string(body)
+	decoded, err := base64.StdEncoding.DecodeString(string(body))
+	if err != nil {
+		return MetricData{}, fmt.Errorf("failed to decode base64 message: %w", err)
+	}
 
-	bodyStr = strings.ReplaceAll(bodyStr, "'", "\"")
+	var metricsData protosensor.MetricsData
 
-	var msgData MessageData
-	if err := json.Unmarshal([]byte(bodyStr), &msgData); err != nil {
-		return MetricData{}, fmt.Errorf("failed to parse message: %w", err)
+	if err := proto.Unmarshal(decoded, &metricsData); err != nil {
+		return MetricData{}, fmt.Errorf("failed to parse protobuf message: %w", err)
+	}
+
+	var timestamp time.Time
+	if metricsData.Timestamp > 0 {
+		timestamp = time.Unix(metricsData.Timestamp, 0)
+	} else {
+		timestamp = time.Now()
 	}
 
 	return MetricData{
-		DeviceID:     msgData.SensorID,
-		CPUUsage:     msgData.Data.CPUUsage,
-		MemoryUsage:  msgData.Data.MemoryUsage,
-		DiskUsage:    msgData.Data.DiskUsage,
-		NetworkUsage: msgData.Data.NetworkUsage,
+		DeviceID:     metricsData.SensorId,
+		CPUUsage:     metricsData.CpuUsage,
+		MemoryUsage:  metricsData.MemoryUsage,
+		DiskUsage:    metricsData.DiskUsage,
+		NetworkUsage: metricsData.NetworkUsage,
+		Timestamp:    timestamp,
 	}, nil
 }
