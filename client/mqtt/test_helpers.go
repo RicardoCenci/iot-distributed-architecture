@@ -6,9 +6,10 @@ type mockLogger struct {
 	logs []string
 }
 
-func (m *mockLogger) Debug(msg string, args ...any) { m.logs = append(m.logs, "debug: "+msg) }
-func (m *mockLogger) Info(msg string, args ...any)  { m.logs = append(m.logs, "info: "+msg) }
-func (m *mockLogger) Warn(msg string, args ...any)  { m.logs = append(m.logs, "warn: "+msg) }
-func (m *mockLogger) Error(msg string, args ...any) { m.logs = append(m.logs, "error: "+msg) }
+func (m *mockLogger) Debug(msg string, args ...any)            { m.logs = append(m.logs, "debug: "+msg) }
+func (m *mockLogger) Info(msg string, args ...any)             { m.logs = append(m.logs, "info: "+msg) }
+func (m *mockLogger) Warn(msg string, args ...any)             { m.logs = append(m.logs, "warn: "+msg) }
+func (m *mockLogger) Error(msg string, args ...any)            { m.logs = append(m.logs, "error: "+msg) }
+func (m *mockLogger) WithContext(args ...any) logger.Interface { return m }
 
 var _ logger.Interface = (*mockLogger)(nil)

@@ -59,7 +59,7 @@ func (a *App) Run(ctx context.Context) {
 
 	a.logger.Info("Starting application")
 
-	client, err := mqtt.NewClient(a.logger, a.config.MQTT.Broker, a.config.Device.ID, a.config.MQTT.User, a.config.MQTT.Password)
+	client, err := mqtt.NewClient(a.logger, a.config.MQTT.Broker, a.device.DeviceID, a.config.MQTT.User, a.config.MQTT.Password)
 
 	if err != nil {
 		a.logger.Error("Failed to create MQTT client", "error", err)

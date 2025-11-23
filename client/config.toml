@@ -1,13 +1,13 @@
 [log]
-level=debug
+level=info
 
 [log.source]
-enabled=false
+enabled=true
 relative=true
 as_json=true
 
 [device]
-id="1c1363fb-1ca4-49da-9766-637be9638bd8"
+id="asflflsaflsa"
 
 [mqtt]
 broker=tcp://localhost:1883

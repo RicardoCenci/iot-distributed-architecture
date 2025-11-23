@@ -13,9 +13,10 @@ import (
 
 type SlogLogger struct {
 	handler slog.Handler
+	context []any
 }
 
-func NewSlogLogger(config Config) *SlogLogger {
+func NewSlogLogger(config Config, context ...any) *SlogLogger {
 	replaceAttr := func(groups []string, a slog.Attr) slog.Attr { return a }
 
 	if config.Source.Enabled && (config.Source.Relative || !config.Source.AsJSON) {
@@ -41,6 +42,7 @@ func NewSlogLogger(config Config) *SlogLogger {
 
 	return &SlogLogger{
 		handler: slog.NewJSONHandler(os.Stdout, handlerOption),
+		context: context,
 	}
 }
 
@@ -112,17 +114,24 @@ func (l *SlogLogger) log(level slog.Level, msg string, args ...any) {
 }
 
 func (l *SlogLogger) Debug(msg string, args ...any) {
-	l.log(slog.LevelDebug, msg, args...)
+	l.log(slog.LevelDebug, msg, append(l.context, args...)...)
 }
 
 func (l *SlogLogger) Info(msg string, args ...any) {
-	l.log(slog.LevelInfo, msg, args...)
+	l.log(slog.LevelInfo, msg, append(l.context, args...)...)
 }
 
 func (l *SlogLogger) Warn(msg string, args ...any) {
-	l.log(slog.LevelWarn, msg, args...)
+	l.log(slog.LevelWarn, msg, append(l.context, args...)...)
 }
 
 func (l *SlogLogger) Error(msg string, args ...any) {
-	l.log(slog.LevelError, msg, args...)
+	l.log(slog.LevelError, msg, append(l.context, args...)...)
+}
+
+func (l *SlogLogger) WithContext(args ...any) *SlogLogger {
+	return &SlogLogger{
+		handler: l.handler,
+		context: append(l.context, args...),
+	}
 }
