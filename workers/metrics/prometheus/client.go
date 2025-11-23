@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"sync"
+	"time"
 
 	"github.com/RicardoCenci/iot-distributed-architecture/shared/logger"
 	"github.com/RicardoCenci/iot-distributed-architecture/workers/metrics/parser"
@@ -11,57 +12,147 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
+type metricValue struct {
+	value     float64
+	timestamp time.Time
+}
+
+type timestampedCollector struct {
+	mu sync.RWMutex
+
+	cpuUsageDesc     *prometheus.Desc
+	memoryUsageDesc  *prometheus.Desc
+	diskUsageDesc    *prometheus.Desc
+	networkUsageDesc *prometheus.Desc
+
+	cpuUsage     map[string]metricValue
+	memoryUsage  map[string]metricValue
+	diskUsage    map[string]metricValue
+	networkUsage map[string]metricValue
+}
+
+func newTimestampedCollector() *timestampedCollector {
+	return &timestampedCollector{
+		cpuUsageDesc: prometheus.NewDesc(
+			"iot_device_cpu_usage_percent",
+			"CPU usage percentage for IoT device",
+			[]string{"device_id"},
+			nil,
+		),
+		memoryUsageDesc: prometheus.NewDesc(
+			"iot_device_memory_usage_percent",
+			"Memory usage percentage for IoT device",
+			[]string{"device_id"},
+			nil,
+		),
+		diskUsageDesc: prometheus.NewDesc(
+			"iot_device_disk_usage_percent",
+			"Disk usage percentage for IoT device",
+			[]string{"device_id"},
+			nil,
+		),
+		networkUsageDesc: prometheus.NewDesc(
+			"iot_device_network_usage_percent",
+			"Network usage percentage for IoT device",
+			[]string{"device_id"},
+			nil,
+		),
+		cpuUsage:     make(map[string]metricValue),
+		memoryUsage:  make(map[string]metricValue),
+		diskUsage:    make(map[string]metricValue),
+		networkUsage: make(map[string]metricValue),
+	}
+}
+
+func (tc *timestampedCollector) Describe(ch chan<- *prometheus.Desc) {
+	ch <- tc.cpuUsageDesc
+	ch <- tc.memoryUsageDesc
+	ch <- tc.diskUsageDesc
+	ch <- tc.networkUsageDesc
+}
+
+func (tc *timestampedCollector) Collect(ch chan<- prometheus.Metric) {
+	tc.mu.RLock()
+	defer tc.mu.RUnlock()
+
+	for deviceID, val := range tc.cpuUsage {
+		metric := prometheus.MustNewConstMetric(
+			tc.cpuUsageDesc,
+			prometheus.GaugeValue,
+			val.value,
+			deviceID,
+		)
+		ch <- prometheus.NewMetricWithTimestamp(val.timestamp, metric)
+	}
+
+	for deviceID, val := range tc.memoryUsage {
+		metric := prometheus.MustNewConstMetric(
+			tc.memoryUsageDesc,
+			prometheus.GaugeValue,
+			val.value,
+			deviceID,
+		)
+		ch <- prometheus.NewMetricWithTimestamp(val.timestamp, metric)
+	}
+
+	for deviceID, val := range tc.diskUsage {
+		metric := prometheus.MustNewConstMetric(
+			tc.diskUsageDesc,
+			prometheus.GaugeValue,
+			val.value,
+			deviceID,
+		)
+		ch <- prometheus.NewMetricWithTimestamp(val.timestamp, metric)
+	}
+
+	for deviceID, val := range tc.networkUsage {
+		metric := prometheus.MustNewConstMetric(
+			tc.networkUsageDesc,
+			prometheus.GaugeValue,
+			val.value,
+			deviceID,
+		)
+		ch <- prometheus.NewMetricWithTimestamp(val.timestamp, metric)
+	}
+}
+
+func (tc *timestampedCollector) recordMetric(metric parser.MetricData) {
+	tc.mu.Lock()
+	defer tc.mu.Unlock()
+
+	deviceID := metric.DeviceID
+	timestamp := metric.Timestamp
+
+	tc.cpuUsage[deviceID] = metricValue{
+		value:     float64(metric.CPUUsage),
+		timestamp: timestamp,
+	}
+	tc.memoryUsage[deviceID] = metricValue{
+		value:     float64(metric.MemoryUsage),
+		timestamp: timestamp,
+	}
+	tc.diskUsage[deviceID] = metricValue{
+		value:     float64(metric.DiskUsage),
+		timestamp: timestamp,
+	}
+	tc.networkUsage[deviceID] = metricValue{
+		value:     float64(metric.NetworkUsage),
+		timestamp: timestamp,
+	}
+}
+
 type Client struct {
 	registry   *prometheus.Registry
 	logger     logger.Interface
 	httpServer *http.Server
-	mu         sync.RWMutex
-
-	cpuUsageGauge     *prometheus.GaugeVec
-	memoryUsageGauge  *prometheus.GaugeVec
-	diskUsageGauge    *prometheus.GaugeVec
-	networkUsageGauge *prometheus.GaugeVec
+	collector  *timestampedCollector
 }
 
 func NewClient(logger logger.Interface, listenAddress string) *Client {
 	registry := prometheus.NewRegistry()
+	collector := newTimestampedCollector()
 
-	cpuUsageGauge := prometheus.NewGaugeVec(
-		prometheus.GaugeOpts{
-			Name: "iot_device_cpu_usage_percent",
-			Help: "CPU usage percentage for IoT device",
-		},
-		[]string{"device_id"},
-	)
-
-	memoryUsageGauge := prometheus.NewGaugeVec(
-		prometheus.GaugeOpts{
-			Name: "iot_device_memory_usage_percent",
-			Help: "Memory usage percentage for IoT device",
-		},
-		[]string{"device_id"},
-	)
-
-	diskUsageGauge := prometheus.NewGaugeVec(
-		prometheus.GaugeOpts{
-			Name: "iot_device_disk_usage_percent",
-			Help: "Disk usage percentage for IoT device",
-		},
-		[]string{"device_id"},
-	)
-
-	networkUsageGauge := prometheus.NewGaugeVec(
-		prometheus.GaugeOpts{
-			Name: "iot_device_network_usage_percent",
-			Help: "Network usage percentage for IoT device",
-		},
-		[]string{"device_id"},
-	)
-
-	registry.MustRegister(cpuUsageGauge)
-	registry.MustRegister(memoryUsageGauge)
-	registry.MustRegister(diskUsageGauge)
-	registry.MustRegister(networkUsageGauge)
+	registry.MustRegister(collector)
 
 	mux := http.NewServeMux()
 	mux.Handle("/metrics", promhttp.HandlerFor(registry, promhttp.HandlerOpts{}))
@@ -72,32 +163,23 @@ func NewClient(logger logger.Interface, listenAddress string) *Client {
 	}
 
 	return &Client{
-		registry:          registry,
-		logger:            logger,
-		httpServer:        server,
-		cpuUsageGauge:     cpuUsageGauge,
-		memoryUsageGauge:  memoryUsageGauge,
-		diskUsageGauge:    diskUsageGauge,
-		networkUsageGauge: networkUsageGauge,
+		registry:   registry,
+		logger:     logger,
+		httpServer: server,
+		collector:  collector,
 	}
 }
 
 func (c *Client) RecordMetric(metric parser.MetricData) error {
-	c.mu.Lock()
-	defer c.mu.Unlock()
+	c.collector.recordMetric(metric)
 
-	deviceID := metric.DeviceID
-
-	c.cpuUsageGauge.WithLabelValues(deviceID).Set(float64(metric.CPUUsage))
-	c.memoryUsageGauge.WithLabelValues(deviceID).Set(float64(metric.MemoryUsage))
-	c.diskUsageGauge.WithLabelValues(deviceID).Set(float64(metric.DiskUsage))
-	c.networkUsageGauge.WithLabelValues(deviceID).Set(float64(metric.NetworkUsage))
-
-	c.logger.Debug("Recorded metrics", "device_id", deviceID,
+	c.logger.Debug("Recorded metrics",
+		"device_id", metric.DeviceID,
 		"cpu", metric.CPUUsage,
 		"memory", metric.MemoryUsage,
 		"disk", metric.DiskUsage,
 		"network", metric.NetworkUsage,
+		"timestamp", metric.Timestamp,
 	)
 
 	return nil
