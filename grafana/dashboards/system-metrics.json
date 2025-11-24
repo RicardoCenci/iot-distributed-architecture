@@ -171,7 +171,7 @@
           "pluginVersion": "12.2.1",
           "targets": [
             {
-              "dataset": "iot_data2",
+              "dataset": "iot_data",
               "datasource": {
                 "type": "grafana-postgresql-datasource",
                 "uid": "${DS_TIMESCALEDB}"
@@ -258,7 +258,7 @@
           "pluginVersion": "12.2.1",
           "targets": [
             {
-              "dataset": "iot_data2",
+              "dataset": "iot_data",
               "datasource": {
                 "type": "grafana-postgresql-datasource",
                 "uid": "${DS_TIMESCALEDB}"
@@ -339,7 +339,7 @@
           "pluginVersion": "12.2.1",
           "targets": [
             {
-              "dataset": "iot_data2",
+              "dataset": "iot_data",
               "datasource": {
                 "type": "grafana-postgresql-datasource",
                 "uid": "${DS_TIMESCALEDB}"
@@ -420,7 +420,7 @@
           "pluginVersion": "12.2.1",
           "targets": [
             {
-              "dataset": "iot_data2",
+              "dataset": "iot_data",
               "datasource": {
                 "type": "grafana-postgresql-datasource",
                 "uid": "${DS_TIMESCALEDB}"

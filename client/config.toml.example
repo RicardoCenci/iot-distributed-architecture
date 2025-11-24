@@ -7,12 +7,12 @@ relative=true
 as_json=true
 
 [device]
-id="asflflsaflsa"
+id="single_device"
 
 [mqtt]
 broker=tcp://localhost:1883
 user=iot-user
-password=GgRbjEzIf8aASduDmYa8yIGMyWElLws9
+password=<YOUR_PASSWORD>
 qos=1
 
 [mqtt.topics.data_json]
