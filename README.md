@@ -52,7 +52,7 @@ This command will:
 Start all services using Docker Compose:
 
 ```bash
-docker-compose up -d
+docker compose up -d
 ```
 
 This will start:
