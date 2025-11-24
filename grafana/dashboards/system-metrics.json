@@ -297,7 +297,7 @@
               "editorMode": "code",
               "format": "table",
               "rawQuery": true,
-              "rawSql": "SELECT pg_total_relation_size('sensor_data') ",
+              "rawSql": "SELECT hypertable_size('sensor_data')",
               "refId": "A",
               "sql": {
                 "columns": [
