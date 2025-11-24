@@ -29,7 +29,12 @@ IoT Devices → MQTT → RabbitMQ → Workers → TimescaleDB/Prometheus → Gra
 
 ## Quick Start
 
-### 1. Setup Project
+### 1. Clone Project
+```bash
+git clone https://github.com/RicardoCenci/iot-distributed-architecture.git
+```
+
+### 2. Setup Project
 
 Generate all required secrets and configuration files:
 
@@ -42,7 +47,7 @@ This command will:
 - Create `.env` file from `.env.example`
 - Create `client/config.toml` from `client/config.toml.example` with the generated client password
 
-### 2. Start Services
+### 3. Start Services
 
 Start all services using Docker Compose:
 
