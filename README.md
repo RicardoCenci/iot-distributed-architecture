@@ -74,14 +74,14 @@ Run a single simulated device:
 
 ```bash
 cd client
-go run cmd/single_random/main.go -config config.toml
+go run cmd/single_random/main.go
 ```
 
 Or run multiple devices:
 
 ```bash
 cd client
-go run cmd/multiple_random/main.go -config config.toml -num-devices 10
+go run cmd/multiple_random/main.go -num-devices 10
 ```
 
 ## Configuration
