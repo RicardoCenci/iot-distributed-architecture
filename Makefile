@@ -68,3 +68,6 @@ setup-project:
 	cp .env.example .env; \
 	cp client/config.toml.example client/config.toml; \
 	sed -i "s|<YOUR_PASSWORD>|$$(cat $(CLIENT_USER_PASSWORD_FILE))|g" client/config.toml; \
+
+get-grafana-admin-password:
+	@echo "Your Grafana admin password: $$(cat $(GF_SECURITY_ADMIN_PASSWORD_FILE))"; \
